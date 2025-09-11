@@ -3,13 +3,10 @@ package tests;
 import org.junit.Before;
 import org.junit.Test;
 import server.ArgumentHandler;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-
-
 import static org.junit.Assert.assertTrue;
 
 public class ArgumentHandlerTest {
@@ -58,18 +55,31 @@ public class ArgumentHandlerTest {
 
     @Test
     public void testMissingPortValue() {
-        ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream error = System.err;
-        System.setErr(new PrintStream(errBaos));
+        System.setErr(new PrintStream(baos));
 
         String[] args = {"-p"};
         ArgumentHandler.parseArguments(args);
         System.setErr(error);
 
-        String output = errBaos.toString();
+        String output = baos.toString();
         assertTrue(output.contains("Missing value for -p argument"));
     }
 
+    @Test
+    public void testInvalidPortValue() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream error = System.err;
+        System.setErr(new PrintStream(baos));
+
+        String[] args = {"-p", "ab12"};
+        ArgumentHandler.parseArguments(args);
+        System.setErr(error);
+
+        String output = baos.toString();
+        assertTrue(output.contains("Invalid port number: ab12"));
+    }
 
     @Test
     public void testPortArg() {

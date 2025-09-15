@@ -28,9 +28,14 @@ public class HttpServer {
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
         Request request = Request.requestParser(client.getInputStream());
         String path = request.getPath();
+        System.out.println(path);
 
-        if (path.equals("/") || path.equals("/index.html")) {
+        if (path.equals("/") || path.equals("/index")) {
             path = "/index.html";
+        }
+
+        if (path.equals("/hello")) {
+            path = "/hello.html";
         }
 
         Response response = new Response(serverName);

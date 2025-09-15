@@ -17,6 +17,19 @@ public class HttpServerTest {
     }
 
     @Test
+    public void testRespondsToHelloHtml() throws IOException {
+        HttpServer server = new HttpServer(0, "testroot");
+        FakeSocket socket = new FakeSocket("GET /hello HTTP/1.1");
+        server.handleClient(socket);
+        String response = socket.getResponse();
+        assertTrue(response.contains("HTTP/1.1 200 OK"));
+        assertTrue(response.contains("Server"));
+        assertTrue(response.contains("Content-Type: text/html"));
+        assertTrue(response.contains("Content-Length:"));
+        assertTrue(response.contains("<h1>Hello, Welcome to Nathan's Server!</h1>"));
+    }
+
+    @Test
     public void testRespondsHelloWorld() throws IOException {
         HttpServer server = new HttpServer(0, "testroot");
         FakeSocket socket = new FakeSocket("GET / HTTP/1.1");
@@ -34,7 +47,7 @@ public class HttpServerTest {
     @Test
     public void testRespondsToIndex() throws IOException {
         HttpServer server = new HttpServer(0, "testroot");
-        FakeSocket socket = new FakeSocket("GET /index.html HTTP/1.1");
+        FakeSocket socket = new FakeSocket("GET /index HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
         int contentLength = Integer.parseInt(response.split("Content-Length: ")[1].split("\r\n")[0]);

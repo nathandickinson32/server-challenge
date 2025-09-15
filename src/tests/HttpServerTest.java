@@ -58,4 +58,31 @@ public class HttpServerTest {
         assertTrue(response.contains("<h1>Hello, World!</h1>"));
         assertEquals(106, contentLength);
     }
+
+    @Test
+    public void testRequestForListing() throws IOException {
+        HttpServer server = new HttpServer(0, "testroot");
+        FakeSocket socket = new FakeSocket("GET /listing HTTP/1.1");
+        server.handleClient(socket);
+        String response = socket.getResponse();
+        assertTrue(response.contains("HTTP/1.1 200 OK"));
+        assertTrue(response.contains("Server"));
+        assertTrue(response.contains("Content-Type: text/html"));
+        assertTrue(response.contains("Content-Length:"));
+        assertTrue(response.contains("<li><a href=\"/index.html\">index.html</a></li>"));
+        assertTrue(response.contains("<li><a href=\"/forms.html\">forms.html</a></li>"));
+        assertTrue(response.contains("<li><a href=\"/hello.pdf\">hello.pdf</a></li>"));
+    }
+
+    @Test
+    public void testListingsWhenNoIndexHtml() throws IOException {
+        HttpServer server = new HttpServer(0, ".");
+        FakeSocket socket = new FakeSocket("GET /index HTTP/1.1");
+        server.handleClient(socket);
+        String response = socket.getResponse();
+        assertTrue(response.contains("HTTP/1.1 200 OK"));
+        assertTrue(response.contains("Server"));
+        assertTrue(response.contains("Content-Type: text/html"));
+        assertTrue(response.contains("<!DOCTYPE html><html><body>"));
+    }
 }

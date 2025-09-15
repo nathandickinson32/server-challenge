@@ -28,14 +28,44 @@ public class HttpServer {
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
         Request request = Request.requestParser(client.getInputStream());
         String path = request.getPath();
-        System.out.println(path);
 
         if (path.equals("/") || path.equals("/index")) {
             path = "/index.html";
+            File file = new File(root, path);
+            if (!file.exists()) {
+                path = "/listing";
+            }
         }
 
         if (path.equals("/hello")) {
             path = "/hello.html";
+        }
+
+        if (path.equals("/listing")) {
+            Response response = new Response(serverName);
+
+            File file = new File(root);
+            StringBuilder body = new StringBuilder();
+            body.append("<!DOCTYPE html><html><body>").append("<ul>");
+
+            File[] files = file.listFiles();
+
+            for (File currentFile : files) {
+                String name = currentFile.getName();
+                if (currentFile.isDirectory()) {
+                    body.append("<li><a href=\"/listing/").append(name)
+                            .append("\">").append(name).append("</a></li>");
+                } else {
+                    body.append("<li><a href=\"/").append(name).append("\">").append(name).append("</a></li>");
+                }
+            }
+
+            body.append("</ul>").append("</body></html>");
+            response.setBody(body.toString());
+            response.addHeader("Content-Type", "text/html");
+            response.addHeader("Content-Length", String.valueOf(body.toString().getBytes(StandardCharsets.ISO_8859_1).length));
+            sendResponse(response, out);
+            return;
         }
 
         Response response = new Response(serverName);

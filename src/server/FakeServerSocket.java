@@ -19,9 +19,4 @@ public class FakeServerSocket implements ServerSocket {
     public boolean isClosed() {
         return false;
     }
-
-    @Override
-    public void close() {
-
-    }
 }

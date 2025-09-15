@@ -2,12 +2,12 @@ package tests;
 
 import org.junit.Test;
 import server.Response;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+
+import static org.junit.Assert.*;
 
 public class ResponseTest {
 
-    private String serverName = "Nathan's Server";
+    private String serverName = "HttpServer";
     private Response response;
 
     @Test
@@ -16,7 +16,6 @@ public class ResponseTest {
         assertEquals(200, response.getStatusCode());
         assertEquals(0, response.getBody().length());
         assertEquals(serverName, response.getHeaders().get("Server"));
-        assertEquals("text/html", response.getHeaders().get("Content-Type"));
     }
 
     @Test
@@ -26,6 +25,5 @@ public class ResponseTest {
 
         assertSame(response, result);
         assertEquals("no-cache", response.getHeaders().get("Cache-Control"));
-
     }
 }

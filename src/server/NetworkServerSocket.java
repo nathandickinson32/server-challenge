@@ -19,9 +19,4 @@ public class NetworkServerSocket implements ServerSocket{
     public boolean isClosed() {
         return false;
     }
-
-    @Override
-    public void close() {
-
-    }
 }

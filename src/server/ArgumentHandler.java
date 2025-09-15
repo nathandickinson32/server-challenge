@@ -70,10 +70,4 @@ public class ArgumentHandler {
     public static boolean shouldExit() {
         return exit;
     }
-
-    public static void reset() {
-        port = 80;
-        rootDir = ".";
-        printConfig = false;
-    }
 }

@@ -21,9 +21,4 @@ public class ClientSocket implements Socket{
     public OutputStream getOutputStream() throws IOException {
         return this.socket.getOutputStream();
     }
-
-    @Override
-    public void close() {
-
-    }
 }

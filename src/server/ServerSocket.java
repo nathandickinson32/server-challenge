@@ -7,6 +7,4 @@ public interface ServerSocket {
     Socket accept() throws IOException;
 
     boolean isClosed();
-
-    void close();
 }

@@ -9,16 +9,16 @@ public class Response {
     private String body;
     private Map<String, String> headers;
     private int statusCode;
+    private String statusMessage;
 
     public Response(String serverName) {
         this.serverName = serverName;
         this.body = "";
         this.headers = new HashMap<>();
         this.headers.put("Server", serverName);
-        this.headers.put("Content-Type", "text/html");
         this.statusCode = 200;
+        this.statusMessage = "OK";
     }
-
 
     public String getBody() {
         return body;
@@ -33,7 +33,23 @@ public class Response {
     }
 
     public Response addHeader(String key, String value) {
-        headers.put(key,value);
+        headers.put(key, value);
         return this;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+    }
+
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
+    }
+
+    public String getStatusMessage() {
+        return statusMessage;
     }
 }

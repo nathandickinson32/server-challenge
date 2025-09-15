@@ -12,17 +12,16 @@ public class Request {
     private String protocol;
     public Map<String, String> headers = new HashMap<>();
 
-    public static Request requestParser(InputStream request) throws IOException {
-        Request request1 = new Request();
-        BufferedReader in = new BufferedReader(new InputStreamReader(request, StandardCharsets.ISO_8859_1));
+    public static Request requestParser(InputStream inputStream) throws IOException {
+        Request request = new Request();
+        BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.ISO_8859_1));
         String requestLine = in.readLine();
-        request1.parseRequestLine(requestLine);
-        request1.parseHeaders(in);
-        return request1;
+        request.parseRequestLine(requestLine);
+        request.parseHeaders(in);
+        return request;
     }
 
     private void parseRequestLine(String line) {
-        System.out.println(line);
         if (line == null)
             throw new IllegalArgumentException("Empty request line");
 
@@ -39,12 +38,11 @@ public class Request {
     private void parseHeaders(BufferedReader in) throws IOException {
         String headerLine;
         while ((headerLine = in.readLine()) != null && !headerLine.trim().isEmpty()) {
-            String[] headerlines = headerLine.split(": ");
-            if (headerlines.length != 2) {
+            String[] headerLines = headerLine.split(": ");
+            if (headerLines.length != 2) {
                 throw new IllegalArgumentException("Invalid Headers");
             }
-            headers.put(headerlines[0], headerlines[1]);
-
+            headers.put(headerLines[0], headerLines[1]);
         }
     }
 

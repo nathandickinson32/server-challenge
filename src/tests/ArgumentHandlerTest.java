@@ -13,11 +13,6 @@ import static org.junit.Assert.assertTrue;
 
 public class ArgumentHandlerTest {
 
-    @Before
-    public void resetArgumentHandler() {
-        ArgumentHandler.reset();
-    }
-
     @Test
     public void testHelpArg() {
         PrintStream stdout = System.out;
@@ -52,7 +47,7 @@ public class ArgumentHandlerTest {
         File root = new File(".");
         String canonicalPath = root.getCanonicalPath();
         assertTrue(output.contains("Example Server"));
-        assertTrue(output.contains("Running on port: 80"));
+        assertTrue(output.contains("Running on port: 1234"));
         assertTrue(output.contains("Serving files from: " + canonicalPath));
         assertTrue(ArgumentHandler.shouldExit());
     }

@@ -12,7 +12,7 @@ public class RequestTest {
     private Request request = new Request();
 
     @Test
-    public void testMethodResponse() throws IOException {
+    public void testMethodResponse() {
         InputStream is = new ByteArrayInputStream("".getBytes());
         assertThrows(IllegalArgumentException.class, () -> {
             Request.requestParser(is);
@@ -20,8 +20,9 @@ public class RequestTest {
     }
 
     @Test
-    public void testInvalidMethodResponse() throws IOException {
-        InputStream is = new ByteArrayInputStream("blah \r\n second line".getBytes());
+    public void testInvalidMethodResponse() {
+        String rawRequest = "blah \r\n second line";
+        InputStream is = new ByteArrayInputStream(rawRequest.getBytes());
         assertThrows(IllegalArgumentException.class, () -> {
             Request.requestParser(is);
         });
@@ -29,14 +30,16 @@ public class RequestTest {
 
     @Test
     public void testGetMethodResponse() throws IOException {
-        InputStream is = new ByteArrayInputStream("GET / HTTP/1.1".getBytes());
+        String rawRequest = "GET / HTTP/1.1";
+        InputStream is = new ByteArrayInputStream(rawRequest.getBytes());
         request = Request.requestParser(is);
         assertEquals("GET", request.getMethod());
     }
 
     @Test
     public void parserParsesIntoParts() throws IOException {
-        InputStream is = new ByteArrayInputStream("GET / HTTP/1.1".getBytes());
+        String rawRequest = "GET / HTTP/1.1";
+        InputStream is = new ByteArrayInputStream(rawRequest.getBytes());
         request = Request.requestParser(is);
         assertEquals("GET", request.getMethod());
         assertEquals("/", request.getPath());
@@ -45,7 +48,8 @@ public class RequestTest {
 
     @Test
     public void parserParsesIntoPartsReflectingTheRequest() throws IOException {
-        InputStream is = new ByteArrayInputStream("POST /hello.html HTTP/2.1".getBytes());
+        String rawRequest = "POST /hello.html HTTP/2.1";
+        InputStream is = new ByteArrayInputStream(rawRequest.getBytes());
         request = Request.requestParser(is);
         assertEquals("POST", request.getMethod());
         assertEquals("/hello.html", request.getPath());
@@ -54,7 +58,8 @@ public class RequestTest {
 
     @Test
     public void testMalformedHeaders() throws IOException {
-        InputStream is = new ByteArrayInputStream("GET / HTTP/1.1\r\nblah".getBytes());
+        String rawRequest = "GET / HTTP/1.1\r\nblah";
+        InputStream is = new ByteArrayInputStream(rawRequest.getBytes());
         assertThrows(IllegalArgumentException.class, () -> {
             Request.requestParser(is);
         });
@@ -62,8 +67,7 @@ public class RequestTest {
 
     @Test
     public void testRetrievableHeaders() throws IOException {
-        String rawRequest = "GET /hello HTTP/1.1\r\n"
-                + "Host: example.com\r\n";
+        String rawRequest = "GET /hello HTTP/1.1\r\nHost: example.com\r\n";
         InputStream is = new ByteArrayInputStream(rawRequest.getBytes());
         request = Request.requestParser(is);
         assertEquals("example.com", request.getHeader("Host"));

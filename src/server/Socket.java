@@ -7,6 +7,4 @@ public interface Socket {
     InputStream getInputStream() throws IOException;
 
     OutputStream getOutputStream() throws IOException;
-
-    void close();
 }

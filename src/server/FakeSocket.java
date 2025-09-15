@@ -26,9 +26,4 @@ public class FakeSocket implements Socket {
     public OutputStream getOutputStream() throws IOException {
         return this.out;
     }
-
-    @Override
-    public void close() {
-
-    }
 }

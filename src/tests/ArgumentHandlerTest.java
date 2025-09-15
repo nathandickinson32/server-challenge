@@ -7,6 +7,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ArgumentHandlerTest {
@@ -32,6 +34,7 @@ public class ArgumentHandlerTest {
         assertTrue(output.contains("  -r     Specify the root directory.  Default is the current working directory."));
         assertTrue(output.contains("  -h     Print this help message"));
         assertTrue(output.contains("  -x     Print the startup configuration without starting the server"));
+        assertTrue(ArgumentHandler.shouldExit());
     }
 
     @Test
@@ -51,6 +54,7 @@ public class ArgumentHandlerTest {
         assertTrue(output.contains("Example Server"));
         assertTrue(output.contains("Running on port: 80"));
         assertTrue(output.contains("Serving files from: " + canonicalPath));
+        assertTrue(ArgumentHandler.shouldExit());
     }
 
     @Test
@@ -83,17 +87,10 @@ public class ArgumentHandlerTest {
 
     @Test
     public void testPortArg() {
-        PrintStream stdout = System.out;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(baos);
-        System.setOut(ps);
-
-        String[] args = {"-x", "-p", "1234"};
+        String[] args = {"-p", "1234"};
         ArgumentHandler.parseArguments(args);
-        System.setOut(stdout);
 
-        String output = baos.toString();
-        assertTrue(output.contains("Running on port: 1234"));
+        assertEquals(1234, ArgumentHandler.getPort());
     }
 
     @Test
@@ -112,20 +109,11 @@ public class ArgumentHandlerTest {
 
     @Test
     public void testRootArg() throws IOException {
-        PrintStream stdout = System.out;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(baos);
-        System.setOut(ps);
-
-        String[] args = {"-x", "-r", "testroot"};
+        String[] args = {"-r", "testroot"};
         ArgumentHandler.parseArguments(args);
-        System.setOut(stdout);
-
-        String output = baos.toString();
 
         File root = new File("testroot");
-        String canonicalPath = root.getCanonicalPath();
-        assertTrue(output.contains("Serving files from: " + canonicalPath));
+        assertEquals(root.getCanonicalPath(), new File(ArgumentHandler.getRootDir()).getCanonicalPath());
     }
 
     @Test

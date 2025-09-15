@@ -1,0 +1,39 @@
+package server;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class Response {
+
+    private String serverName;
+    private String body;
+    private Map<String, String> headers;
+    private int statusCode;
+
+    public Response(String serverName) {
+        this.serverName = serverName;
+        this.body = "";
+        this.headers = new HashMap<>();
+        this.headers.put("Server", serverName);
+        this.headers.put("Content-Type", "text/html");
+        this.statusCode = 200;
+    }
+
+
+    public String getBody() {
+        return body;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public Response addHeader(String key, String value) {
+        headers.put(key,value);
+        return this;
+    }
+}

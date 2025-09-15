@@ -15,6 +15,7 @@ public class ArgumentHandler {
     private static int port = 80;
     private static String rootDir = ".";
     private static boolean printConfig = false;
+    private static boolean exit = false;
 
     public static void parseArguments(String[] args) {
         for (int i = 0; i < args.length; i++) {
@@ -22,8 +23,9 @@ public class ArgumentHandler {
 
             if ("-h".equals(arg)) {
                 System.out.println(HELP_MESSAGE);
+                exit = true;
             } else if ("-x".equals(arg)) {
-                printConfig = true;
+                exit = true;
             } else if ("-p".equals(arg)) {
                 if (i + 1 < args.length) {
                     try {
@@ -42,9 +44,7 @@ public class ArgumentHandler {
                 }
             }
         }
-        if (printConfig) {
-            printStartupConfig();
-        }
+        printStartupConfig();
     }
 
     private static void printStartupConfig() {
@@ -57,6 +57,18 @@ public class ArgumentHandler {
         } catch (Exception e) {
             System.out.println("Serving files from: " + root.getAbsolutePath());
         }
+    }
+
+    public static int getPort() {
+        return port;
+    }
+
+    public static String getRootDir() {
+        return rootDir;
+    }
+
+    public static boolean shouldExit() {
+        return exit;
     }
 
     public static void reset() {

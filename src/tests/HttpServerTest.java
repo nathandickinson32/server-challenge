@@ -85,4 +85,22 @@ public class HttpServerTest {
         assertTrue(response.contains("Content-Type: text/html"));
         assertTrue(response.contains("<!DOCTYPE html><html><body>"));
     }
+
+    @Test
+    public void testRequestForListingImages() throws IOException {
+        HttpServer server = new HttpServer(0, "testroot");
+        FakeSocket socket = new FakeSocket("GET /listing/img HTTP/1.1");
+        server.handleClient(socket);
+
+        String response = socket.getResponse();
+
+        assertTrue(response.contains("HTTP/1.1 200 OK"));
+        assertTrue(response.contains("Server"));
+        assertTrue(response.contains("Content-Type: text/html"));
+        assertTrue(response.contains("Content-Length:"));
+        assertTrue(response.contains("<li><a href=\"/img/autobot.jpg\">autobot.jpg</a></li>"));
+        assertTrue(response.contains("<li><a href=\"/img/autobot.png\">autobot.png</a></li>"));
+        assertTrue(response.contains("<li><a href=\"/img/decepticon.jpg\">decepticon.jpg</a></li>"));
+        assertTrue(response.contains("<li><a href=\"/img/decepticon.png\">decepticon.png</a></li>"));
+    }
 }

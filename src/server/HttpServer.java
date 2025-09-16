@@ -2,6 +2,7 @@ package server;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
 public class HttpServer {
@@ -10,10 +11,19 @@ public class HttpServer {
     private final String root;
     private ServerSocket serverSocket;
     private String serverName = "HttpServer";
+    private static Map<String, String> mimeTypes = new HashMap<>();
 
     public HttpServer(int port, String root) {
         this.port = port;
         this.root = root;
+        addMimeTypes();
+    }
+
+    public void addMimeTypes(){
+        mimeTypes.put("html", "text/html");
+        mimeTypes.put("png", "image/png");
+        mimeTypes.put("jpg", "image/jpeg");
+        mimeTypes.put("pdf", "application/pdf");
     }
 
     public void start() throws IOException {
@@ -52,12 +62,35 @@ public class HttpServer {
 
             for (File currentFile : files) {
                 String name = currentFile.getName();
-                if (currentFile.isDirectory()) {
+                if (currentFile.getPath().contains("img")) {
                     body.append("<li><a href=\"/listing/").append(name)
                             .append("\">").append(name).append("</a></li>");
                 } else {
                     body.append("<li><a href=\"/").append(name).append("\">").append(name).append("</a></li>");
                 }
+            }
+
+            body.append("</ul>").append("</body></html>");
+            response.setBody(body.toString());
+            response.addHeader("Content-Type", "text/html");
+            response.addHeader("Content-Length", String.valueOf(body.toString().getBytes(StandardCharsets.ISO_8859_1).length));
+            sendResponse(response, out);
+            return;
+        }
+
+        if (path.equals("/listing/img")) {
+            Response response = new Response(serverName);
+
+            File file = new File(root, "img");
+            StringBuilder body = new StringBuilder();
+            body.append("<!DOCTYPE html><html><body><ul>");
+
+            File[] files = file.listFiles();
+
+            for (File currentFile : files) {
+                String name = currentFile.getName();
+                body.append("<li><a href=\"/img/").append(name)
+                        .append("\">").append(name).append("</a></li>");
             }
 
             body.append("</ul>").append("</body></html>");

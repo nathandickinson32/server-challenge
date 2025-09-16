@@ -33,7 +33,7 @@ public class HttpServer {
     }
 
     public void handleClient(Socket client) throws IOException {
-        try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()))) {
+        try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream(), StandardCharsets.ISO_8859_1))) {
 
             Request request = Request.requestParser(client.getInputStream());
             Response response;
@@ -43,7 +43,7 @@ public class HttpServer {
             if (path.equals("/") || path.equals("/index")) {
                 File indexFile = new File(root, "index.html");
                 if (indexFile.exists() && indexFile.isFile()) {
-                    handler = new HelloHandler(root, "index.html");
+                    handler = new FileHandler(root, "index.html");
                 } else {
                     handler = new ListingHandler(root);
                 }
@@ -55,23 +55,17 @@ public class HttpServer {
             }
 
             if (handler == null) {
-                File file = new File(root, path.startsWith("/") ? path.substring(1) : path);
+                File file = new File(root, path);
                 if (file.exists() && file.isFile()) {
-                    handler = new HelloHandler(root, file.getName()); // serve any static file
+                    handler = new FileHandler(root, path);
                 }
             }
 
-            if (handler != null) {
-                response = handler.handle(request);
-            } else {
-                response = new Response();
-                response.setStatusCode(404);
-                response.setStatusMessage("Not Found");
-                String body = "<h1>404 Not Found</h1>";
-                response.setBody(body);
-                response.addHeader("Content-Type", "text/html");
-                response.addHeader("Content-Length", String.valueOf(body.getBytes(StandardCharsets.ISO_8859_1).length));
+            if (handler == null) {
+                handler = new NotFoundHandler();
             }
+
+            response = handler.handle(request);
             sendResponse(response, out);
         }
     }

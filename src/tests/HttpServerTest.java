@@ -2,7 +2,9 @@ package tests;
 
 import org.junit.Test;
 import server.*;
+
 import java.io.IOException;
+
 import static org.junit.Assert.*;
 
 public class HttpServerTest {
@@ -104,13 +106,44 @@ public class HttpServerTest {
         assertTrue(response.contains("<li><a href=\"/img/decepticon.png\">decepticon.png</a></li>"));
     }
 
-//    @Test
-//    public void testMimeTypeForPdf() throws IOException {
-//        HttpServer server = new HttpServer(0, "testroot");
-//        FakeSocket socket = new FakeSocket("GET /hello.pdf HTTP/1.1");
-//        server.handleClient(socket);
-//
-//        String response = socket.getResponse();
-//        assertTrue(response.contains("Content-Type: application/pdf"));
-//    }
+    @Test
+    public void testRequestForPdf() throws IOException {
+        HttpServer server = new HttpServer(0, "testroot");
+        FakeSocket socket = new FakeSocket("GET /hello.pdf HTTP/1.1");
+        server.handleClient(socket);
+
+        String response = socket.getResponse();
+        assertTrue(response.contains("HTTP/1.1 200 OK"));
+        assertTrue(response.contains("Server"));
+        assertTrue(response.contains("Content-Type: application/pdf"));
+        assertTrue(response.contains("Content-Length:"));
+    }
+
+    @Test
+    public void testRequestForPng() throws IOException {
+        HttpServer server = new HttpServer(0, "testroot");
+        FakeSocket socket = new FakeSocket("GET /img/decepticon.png HTTP/1.1");
+
+        server.handleClient(socket);
+        String response = socket.getResponse();
+
+        assertTrue(response.contains("HTTP/1.1 200 OK"));
+        assertTrue(response.contains("Server"));
+        assertTrue(response.contains("Content-Type: image/png"));
+        assertTrue(response.contains("Content-Length:"));
+    }
+
+    @Test
+    public void testRequestForJpg() throws IOException {
+        HttpServer server = new HttpServer(0, "testroot");
+        FakeSocket socket = new FakeSocket("GET /img/decepticon.jpg HTTP/1.1");
+
+        server.handleClient(socket);
+        String response = socket.getResponse();
+
+        assertTrue(response.contains("HTTP/1.1 200 OK"));
+        assertTrue(response.contains("Server"));
+        assertTrue(response.contains("Content-Type: image/jpeg"));
+        assertTrue(response.contains("Content-Length:"));
+    }
 }

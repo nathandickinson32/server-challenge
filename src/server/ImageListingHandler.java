@@ -7,8 +7,8 @@ public class ImageListingHandler implements RequestHandler {
 
     private final File file;
 
-    public ImageListingHandler(File imageDirectory) {
-        this.file = imageDirectory;
+    public ImageListingHandler(File file) {
+        this.file = file;
     }
 
     @Override

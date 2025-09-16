@@ -11,8 +11,8 @@ public class Response {
     private int statusCode;
     private String statusMessage;
 
-    public Response(String serverName) {
-        this.serverName = serverName;
+    public Response() {
+        this.serverName = "HttpServer";
         this.body = "";
         this.headers = new HashMap<>();
         this.headers.put("Server", serverName);

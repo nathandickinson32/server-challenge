@@ -12,7 +12,7 @@ public class ResponseTest {
 
     @Test
     public void defaultConstructorBuildsEmptyResponse() {
-        response = new Response(serverName);
+        response = new Response();
         assertEquals(200, response.getStatusCode());
         assertEquals(0, response.getBody().length());
         assertEquals(serverName, response.getHeaders().get("Server"));
@@ -20,7 +20,7 @@ public class ResponseTest {
 
     @Test
     public void addHeaderAddsAHeader() {
-        response = new Response(serverName);
+        response = new Response();
         Response result = response.addHeader("Cache-Control", "no-cache");
 
         assertSame(response, result);

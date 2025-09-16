@@ -103,4 +103,14 @@ public class HttpServerTest {
         assertTrue(response.contains("<li><a href=\"/img/decepticon.jpg\">decepticon.jpg</a></li>"));
         assertTrue(response.contains("<li><a href=\"/img/decepticon.png\">decepticon.png</a></li>"));
     }
+
+//    @Test
+//    public void testMimeTypeForPdf() throws IOException {
+//        HttpServer server = new HttpServer(0, "testroot");
+//        FakeSocket socket = new FakeSocket("GET /hello.pdf HTTP/1.1");
+//        server.handleClient(socket);
+//
+//        String response = socket.getResponse();
+//        assertTrue(response.contains("Content-Type: application/pdf"));
+//    }
 }

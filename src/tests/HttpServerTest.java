@@ -1,10 +1,10 @@
 package tests;
 
 import org.junit.Test;
-import server.*;
-
+import server.FakeSocket;
+import server.HttpServer;
 import java.io.IOException;
-
+import java.nio.charset.StandardCharsets;
 import static org.junit.Assert.*;
 
 public class HttpServerTest {
@@ -145,5 +145,46 @@ public class HttpServerTest {
         assertTrue(response.contains("Server"));
         assertTrue(response.contains("Content-Type: image/jpeg"));
         assertTrue(response.contains("Content-Length:"));
+    }
+
+    @Test
+    public void testGetFormWithQueryParams() throws IOException {
+        HttpServer server = new HttpServer(0, "testroot");
+        FakeSocket socket = new FakeSocket("GET /form?foo=1&bar=2 HTTP/1.1");
+        server.handleClient(socket);
+        String response = socket.getResponse();
+        assertTrue(response.contains("HTTP/1.1 200 OK"));
+        assertTrue(response.contains("Content-Type: text/html"));
+        assertTrue(response.contains("<h2>GET Form</h2>"));
+        assertTrue(response.contains("<li>foo: 1</li>"));
+        assertTrue(response.contains("<li>bar: 2</li>"));
+    }
+
+    @Test
+    public void testPostFormFileUpload() throws IOException {
+        HttpServer server = new HttpServer(0, "testroot");
+
+        String body = "--XYZ\r\n Content-Disposition: form-data; name=\"file\"; filename=\"autobot.jpg\"\r\n" +
+                "Content-Type: image/jpeg\r\n\r\n" +
+                "FAKEJPEGDATA123" + "\r\n" +
+                "--XYZ--\r\n";
+
+        String request = "POST /form HTTP/1.1\r\n" +
+                "Host: localhost\r\n" +
+                "Content-Type: multipart/form-data; boundary=XYZ\r\n" +
+                "Content-Length: " + body.getBytes(StandardCharsets.ISO_8859_1).length + "\r\n" +
+                "\r\n" +
+                body;
+
+        FakeSocket socket = new FakeSocket(request);
+
+        server.handleClient(socket);
+        String response = socket.getResponse();
+
+        assertTrue(response.startsWith("HTTP/1.1 200 OK"));
+        assertTrue(response.contains("<li>file name: autobot.jpg</li>"));
+        assertTrue(response.contains("<li>content type: image/jpeg</li>"));
+        assertTrue(response.contains("<h2>POST Form</h2>"));
+        assertTrue(response.contains("\r\n\r\n"));
     }
 }

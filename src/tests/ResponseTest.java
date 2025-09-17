@@ -2,7 +2,6 @@ package tests;
 
 import org.junit.Test;
 import server.Response;
-
 import static org.junit.Assert.*;
 
 public class ResponseTest {

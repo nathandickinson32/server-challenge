@@ -2,10 +2,8 @@ package tests;
 
 import org.junit.Test;
 import server.FakeSocket;
-
 import java.io.IOException;
 import java.io.OutputStream;
-
 import static org.junit.Assert.assertEquals;
 
 public class FakeSocketTest {

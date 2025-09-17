@@ -30,6 +30,8 @@ public class HttpServer {
         handlers.put(new RouteKey("GET", "/hello"), new HelloHandler(root, "hello.html"));
         handlers.put(new RouteKey("GET", "/listing"), new ListingHandler(root));
         handlers.put(new RouteKey("GET", "/listing/img"), new ImageListingHandler(new File(root, "img")));
+        handlers.put(new RouteKey("GET", "/form"), new FormHandler(root));
+        handlers.put(new RouteKey("POST", "/form"), new FormHandler(root));
     }
 
     public void handleClient(Socket client) throws IOException {
@@ -50,7 +52,7 @@ public class HttpServer {
             }
 
             if (handler == null) {
-                RouteKey key = new RouteKey(request.getMethod(), path);
+                RouteKey key = new RouteKey(request.getMethod(), path.split("\\?")[0]);
                 handler = handlers.get(key);
             }
 

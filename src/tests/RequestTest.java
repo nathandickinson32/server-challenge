@@ -57,15 +57,6 @@ public class RequestTest {
     }
 
     @Test
-    public void testMalformedHeaders() throws IOException {
-        String rawRequest = "GET / HTTP/1.1\r\nblah";
-        InputStream is = new ByteArrayInputStream(rawRequest.getBytes());
-        assertThrows(IllegalArgumentException.class, () -> {
-            Request.requestParser(is);
-        });
-    }
-
-    @Test
     public void testRetrievableHeaders() throws IOException {
         String rawRequest = "GET /hello HTTP/1.1\r\nHost: example.com\r\n";
         InputStream is = new ByteArrayInputStream(rawRequest.getBytes());

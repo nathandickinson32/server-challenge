@@ -10,7 +10,7 @@ public class HttpServer {
     private final int port;
     private final String root;
     private ServerSocket serverSocket;
-    private HashMap<RouteKey, RequestHandler> handlers = new HashMap<>();
+    private HashMap<RoutePair, RequestHandler> handlers = new HashMap<>();
 
     public HttpServer(int port, String root) {
         this.port = port;
@@ -27,11 +27,11 @@ public class HttpServer {
     }
 
     public void addHandlers() {
-        handlers.put(new RouteKey("GET", "/hello"), new HelloHandler(root, "hello.html"));
-        handlers.put(new RouteKey("GET", "/listing"), new ListingHandler(root));
-        handlers.put(new RouteKey("GET", "/listing/img"), new ImageListingHandler(new File(root, "img")));
-        handlers.put(new RouteKey("GET", "/form"), new FormHandler(root));
-        handlers.put(new RouteKey("POST", "/form"), new FormHandler(root));
+        handlers.put(new RoutePair("GET", "/hello"), new HelloHandler(root, "hello.html"));
+        handlers.put(new RoutePair("GET", "/listing"), new ListingHandler(root));
+        handlers.put(new RoutePair("GET", "/listing/img"), new ImageListingHandler(new File(root, "img")));
+        handlers.put(new RoutePair("GET", "/form"), new FormHandler(root));
+        handlers.put(new RoutePair("POST", "/form"), new FormHandler(root));
     }
 
     public void handleClient(Socket client) throws IOException {
@@ -52,7 +52,7 @@ public class HttpServer {
             }
 
             if (handler == null) {
-                RouteKey key = new RouteKey(request.getMethod(), path.split("\\?")[0]);
+                RoutePair key = new RoutePair(request.getMethod(), path.split("\\?")[0]);
                 handler = handlers.get(key);
             }
 

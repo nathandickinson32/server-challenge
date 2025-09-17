@@ -1,7 +1,6 @@
 package server;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class ListingHandler implements RequestHandler {
@@ -13,7 +12,7 @@ public class ListingHandler implements RequestHandler {
     }
 
     @Override
-    public Response handle(Request request) throws IOException {
+    public Response handle(Request request) {
         Response response = new Response();
 
         StringBuilder body = new StringBuilder();

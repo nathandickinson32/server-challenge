@@ -41,9 +41,9 @@ public class MultipartParser {
                 result.contentType = part.substring(contentIdx + 13, endIdx).trim();
             }
 
-            int blankIdx = part.indexOf("\r\n\r\n");
-            if (blankIdx >= 0) {
-                String fileData = part.substring(blankIdx + 4).trim();
+            int carriageIdx = part.indexOf("\r\n\r\n");
+            if (carriageIdx >= 0) {
+                String fileData = part.substring(carriageIdx + 4).trim();
                 result.size = fileData.getBytes(StandardCharsets.ISO_8859_1).length;
             }
         }

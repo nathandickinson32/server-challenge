@@ -4,6 +4,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.net.URLDecoder;
 
+import static server.SuccessHandler.getSuccessResponse;
+
 public class GuessHandler implements RequestHandler {
 
     private static GameState game = new GameState();
@@ -12,81 +14,29 @@ public class GuessHandler implements RequestHandler {
         game = new GameState(target, attemptsLeft);
     }
 
-    static class GameState {
-        int target;
-        int attemptsLeft;
-
-        GameState() {
-            this.target = new Random().nextInt(100) + 1;
-            this.attemptsLeft = 7;
-        }
-
-        GameState(int target, int attemptsLeft) {
-            this.target = target;
-            this.attemptsLeft = attemptsLeft;
-        }
-    }
-
     @Override
     public Response handle(Request request) {
-        Response response = new Response();
-        String message;
+        String message = "";
 
         if ("GET".equals(request.getMethod())) {
-            message = "I'm thinking of a number between 1 and 100. You have " + game.attemptsLeft + " tries!";
+            message = getStartMessage();
         } else if ("POST".equals(request.getMethod())) {
-            String bodyStr = new String(request.getRawBody(), StandardCharsets.ISO_8859_1);
-            Map<String, String> params = parseForm(bodyStr);
-            message = processGuess(params.get("guess"));
-            System.out.println(message);
-
-        } else {
-            response.setStatusCode(405);
-            response.setStatusMessage("Method Not Allowed");
-            response.setBody("Only GET and POST supported.");
-            response.addHeader("Content-Type", "text/plain");
-            response.addHeader("Content-Length",
-                    String.valueOf(response.getBody().getBytes(StandardCharsets.ISO_8859_1).length));
-            return response;
+            message = getPostMessage(request);
         }
 
-        response.setStatusCode(200);
-        response.setStatusMessage("OK");
-        response.setBody(buildPage(message));
-        response.addHeader("Content-Type", "text/html");
-        response.addHeader("Content-Length",
-                String.valueOf(response.getBody().getBytes(StandardCharsets.ISO_8859_1).length));
-
-        return response;
+        return getSuccessResponse(buildPage(message));
     }
 
-    private String processGuess(String guessStr) {
-        if (guessStr == null) {
-            return "I'm thinking of a number between 1 and 100. You have " + game.attemptsLeft + " tries!";
-        }
-
-        int guess;
-        guess = Integer.parseInt(guessStr);
-        game.attemptsLeft--;
-
-        if (guess == game.target) {
-            int answer = game.target;
-            game = new GameState();
-            return "Correct! The number was " + answer + ". A new game has started.";
-        } else if (game.attemptsLeft <= 0) {
-            int answer = game.target;
-            game = new GameState();
-            return "Out of tries! The number was " + answer + ". A new game has started.";
-        } else if (guess < game.target) {
-            return "Too low! Attempts left: " + game.attemptsLeft;
-        } else {
-            return "Too high! Attempts left: " + game.attemptsLeft;
-        }
+    private String getPostMessage(Request request) {
+        String message;
+        String bodyStr = new String(request.getRawBody(), StandardCharsets.ISO_8859_1);
+        Map<String, String> params = parseForm(bodyStr);
+        message = processGuess(params.get("guess"));
+        return message;
     }
 
     private Map<String, String> parseForm(String body) {
         Map<String, String> params = new HashMap<>();
-        if (body == null || body.isEmpty()) return params;
         for (String pair : body.split("&")) {
             String[] kv = pair.split("=", 2);
             if (kv.length == 2) {
@@ -97,6 +47,27 @@ public class GuessHandler implements RequestHandler {
             }
         }
         return params;
+    }
+
+    private String processGuess(String guessStr) {
+        int guess = Integer.parseInt(guessStr);
+        int target = game.getTarget();
+        game.decrementAttempts();
+
+        if (guess == target) {
+            return "Correct! The number was " + resetGame(target);
+        } else if (game.getAttemptsLeft() <= 0) {
+            return "Out of tries! The number was " + resetGame(target);
+        } else if (guess < game.getTarget()) {
+            return "Too low! Attempts left: " + game.getAttemptsLeft();
+        } else {
+            return "Too high! Attempts left: " + game.getAttemptsLeft();
+        }
+    }
+
+    private static String resetGame(int target) {
+        game = new GameState();
+        return target + ". A new game has started.";
     }
 
     private String buildPage(String message) {
@@ -114,5 +85,9 @@ public class GuessHandler implements RequestHandler {
                   </body>
                 </html>
                 """.formatted(message);
+    }
+
+    private static String getStartMessage() {
+        return "I'm thinking of a number between 1 and 100. You have " + game.getAttemptsLeft() + " tries!";
     }
 }

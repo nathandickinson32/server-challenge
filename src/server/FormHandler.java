@@ -1,7 +1,8 @@
 package server;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
+
+import static server.SuccessHandler.getSuccessResponse;
 
 public class FormHandler implements RequestHandler {
 
@@ -12,9 +13,8 @@ public class FormHandler implements RequestHandler {
     }
 
     @Override
-    public Response handle(Request request){
+    public Response handle(Request request) {
         Response response = new Response();
-
         if ("GET".equals(request.getMethod())) {
             StringBuilder body = new StringBuilder();
             Map<String, String> params = request.getQueryParams();
@@ -25,12 +25,7 @@ public class FormHandler implements RequestHandler {
             }
             body.append("</ul>");
 
-            response.setStatusCode(200);
-            response.setStatusMessage("OK");
-            response.setBody(body.toString());
-            response.addHeader("Content-Type", "text/html");
-            response.addHeader("Content-Length", String.valueOf(body.toString().getBytes(StandardCharsets.ISO_8859_1).length));
-
+            response = getSuccessResponse(body.toString());
         }
 
         if ("POST".equals(request.getMethod())) {
@@ -39,18 +34,12 @@ public class FormHandler implements RequestHandler {
 
             MultipartParser.Result parsed = MultipartParser.parse(bodyBytes, contentTypeHeader);
 
-            StringBuilder body = new StringBuilder();
-            body.append("<h2>POST Form</h2><ul>");
-            body.append("<li>file name: ").append(parsed.filename).append("</li>");
-            body.append("<li>content type: ").append(parsed.contentType).append("</li>");
-            body.append("<li>file size: ").append(parsed.size).append("</li>");
-            body.append("</ul>");
-
-            response.setStatusCode(200);
-            response.setStatusMessage("OK");
-            response.setBody(body.toString());
-            response.addHeader("Content-Type", "text/html");
-            response.addHeader("Content-Length", String.valueOf(body.toString().getBytes(StandardCharsets.ISO_8859_1).length));
+            String body = "<h2>POST Form</h2><ul>" +
+                    "<li>file name: " + parsed.filename + "</li>" +
+                    "<li>content type: " + parsed.contentType + "</li>" +
+                    "<li>file size: " + parsed.size + "</li>" +
+                    "</ul>";
+            response = getSuccessResponse(body);
         }
         return response;
     }

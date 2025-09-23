@@ -3,6 +3,8 @@ package server;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static server.SuccessHandler.getSuccessResponse;
+
 public class PingHandler implements RequestHandler {
     public static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -35,11 +37,6 @@ public class PingHandler implements RequestHandler {
                 "<li>start time: " + FORMATTER.format(start) + "</li>\n" +
                 "<li>end time: " + FORMATTER.format(end) + "</li>\n";
 
-        Response response = new Response();
-        response.setStatusCode(200);
-        response.setStatusMessage("OK");
-        response.addHeader("Content-Type", "text/html");
-        response.setBody(body);
-        return response;
+        return getSuccessResponse(body);
     }
 }

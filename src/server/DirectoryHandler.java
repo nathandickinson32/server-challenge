@@ -1,9 +1,10 @@
 package server;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static server.SuccessHandler.getSuccessResponse;
 
 public class DirectoryHandler implements RequestHandler {
 
@@ -45,12 +46,6 @@ public class DirectoryHandler implements RequestHandler {
 
         body.append("</ul></body></html>");
 
-        response.setStatusCode(200);
-        response.setStatusMessage("OK");
-        response.setBody(body.toString());
-        response.addHeader("Content-Type", "text/html");
-        response.addHeader("Content-Length", String.valueOf(body.toString().getBytes(StandardCharsets.ISO_8859_1).length));
-
-        return response;
+        return getSuccessResponse(body.toString());
     }
 }

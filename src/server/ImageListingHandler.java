@@ -1,7 +1,8 @@
 package server;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
+
+import static server.SuccessHandler.getSuccessResponse;
 
 public class ImageListingHandler implements RequestHandler {
 
@@ -13,8 +14,6 @@ public class ImageListingHandler implements RequestHandler {
 
     @Override
     public Response handle(Request request) {
-        Response response = new Response();
-
         StringBuilder body = new StringBuilder();
         body.append("<!DOCTYPE html><html><body><ul>");
         File[] files = file.listFiles();
@@ -28,10 +27,6 @@ public class ImageListingHandler implements RequestHandler {
         }
         body.append("</ul></body></html>");
 
-        response.setBody(body.toString());
-        response.addHeader("Content-Type", "text/html");
-        response.addHeader("Content-Length", String.valueOf(body.toString().getBytes(StandardCharsets.ISO_8859_1).length));
-
-        return response;
+        return getSuccessResponse(body.toString());
     }
 }

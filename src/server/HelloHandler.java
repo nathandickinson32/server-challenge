@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import static server.SuccessHandler.getSuccessResponse;
+
 public class HelloHandler implements RequestHandler {
 
     private final String root;
@@ -17,12 +19,9 @@ public class HelloHandler implements RequestHandler {
 
     @Override
     public Response handle(Request request) throws IOException {
-        Response response = new Response();
+
         File file = new File(root, filename);
         String body = Files.readString(file.toPath(), StandardCharsets.ISO_8859_1);
-        response.setBody(body);
-        response.addHeader("Content-Type", "text/html");
-        response.addHeader("Content-Length", String.valueOf(body.getBytes(StandardCharsets.ISO_8859_1).length));
-        return response;
+        return getSuccessResponse(body);
     }
 }

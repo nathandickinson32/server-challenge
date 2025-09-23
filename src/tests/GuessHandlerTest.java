@@ -1,6 +1,5 @@
 package tests;
 
-
 import org.junit.Test;
 import server.FakeSocket;
 import server.GuessHandler;
@@ -22,6 +21,9 @@ public class GuessHandlerTest {
         assertTrue(response.contains("HTTP/1.1 200 OK"));
         assertTrue(response.contains("<h1>Guess the Number</h1>"));
         assertTrue(response.contains("<form method=\"post\" action=\"/guess\">"));
+        assertTrue(response.contains("<label>Enter guess (1 to 100):</label>"));
+        assertTrue(response.contains("<input type=\"number\" name=\"guess\" min=\"1\" max=\"100\" required>"));
+        assertTrue(response.contains("<button type=\"submit\">Submit</button>"));
     }
 
     @Test
@@ -93,7 +95,6 @@ public class GuessHandlerTest {
         );
         server.handleClient(socket);
         String response = socket.getResponse();
-
         assertTrue(response.contains("Out of tries! The number was 50"));
         assertTrue(response.contains("A new game has started."));
     }

@@ -1,6 +1,8 @@
 package server;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 public class FileHandler implements RequestHandler {
@@ -14,14 +16,24 @@ public class FileHandler implements RequestHandler {
     @Override
     public Response handle(Request request) throws IOException {
         Response response = new Response();
+
+        if (!file.exists() || !file.isFile()) {
+            response.setStatusCode(404);
+            response.setStatusMessage("Not Found");
+            response.setBody("<h1>404 Not Found</h1>");
+            response.addHeader("Content-Type", "text/html");
+            return response;
+        }
+
         byte[] fileBytes = Files.readAllBytes(file.toPath());
         String contentType = Files.probeContentType(file.toPath());
+        if (contentType == null) contentType = "text/plain";
 
-        if (contentType == null) contentType = "application/octet-stream";
-
-        response.setBody(new String(fileBytes, "ISO_8859_1"));
+        response.setBody(new String(fileBytes, StandardCharsets.ISO_8859_1));
         response.addHeader("Content-Type", contentType);
         response.addHeader("Content-Length", String.valueOf(fileBytes.length));
+        response.setStatusCode(200);
+        response.setStatusMessage("OK");
         return response;
     }
 }

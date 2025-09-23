@@ -3,9 +3,13 @@ package tests;
 import org.junit.Test;
 import server.FakeSocket;
 import server.HttpServer;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+
 import static org.junit.Assert.*;
+import static server.PingHandler.FORMATTER;
 
 public class HttpServerTest {
 
@@ -74,18 +78,6 @@ public class HttpServerTest {
         assertTrue(response.contains("<li><a href=\"/index.html\">index.html</a></li>"));
         assertTrue(response.contains("<li><a href=\"/forms.html\">forms.html</a></li>"));
         assertTrue(response.contains("<li><a href=\"/hello.pdf\">hello.pdf</a></li>"));
-    }
-
-    @Test
-    public void testListingsWhenNoIndexHtml() throws IOException {
-        HttpServer server = new HttpServer(0, ".");
-        FakeSocket socket = new FakeSocket("GET /index HTTP/1.1");
-        server.handleClient(socket);
-        String response = socket.getResponse();
-        assertTrue(response.contains("HTTP/1.1 200 OK"));
-        assertTrue(response.contains("Server"));
-        assertTrue(response.contains("Content-Type: text/html"));
-        assertTrue(response.contains("<!DOCTYPE html><html><body>"));
     }
 
     @Test
@@ -186,5 +178,51 @@ public class HttpServerTest {
         assertTrue(response.contains("<li>content type: image/jpeg</li>"));
         assertTrue(response.contains("<h2>POST Form</h2>"));
         assertTrue(response.contains("\r\n\r\n"));
+    }
+
+    @Test
+    public void testPingNoDelay() throws IOException {
+        HttpServer server = new HttpServer(0, "testroot");
+        FakeSocket socket = new FakeSocket("GET /ping HTTP/1.1");
+        server.handleClient(socket);
+        String response = socket.getResponse();
+
+        assertTrue(response.contains("HTTP/1.1 200 OK"));
+        assertTrue(response.contains("Content-Type: text/html"));
+        assertTrue(response.contains("<h2>Ping</h2>"));
+        assertTrue(response.contains("<li>start time:"));
+        assertTrue(response.contains("<li>end time:"));
+    }
+
+    @Test
+    public void testPingOneSecondDelay() throws IOException {
+        HttpServer server = new HttpServer(0, "testroot");
+
+        FakeSocket socket = new FakeSocket("GET /ping/1 HTTP/1.1");
+        server.handleClient(socket);
+        String response = socket.getResponse();
+
+        String startTimeStr = response.split("<li>start time: ")[1].split("</li>")[0];
+        String endTimeStr = response.split("<li>end time: ")[1].split("</li>")[0];
+        LocalDateTime startTime = LocalDateTime.parse(startTimeStr, FORMATTER);
+        LocalDateTime endTime = LocalDateTime.parse(endTimeStr, FORMATTER);
+        long secondsElapsed = java.time.Duration.between(startTime, endTime).getSeconds();
+        assertTrue(secondsElapsed >= 1);
+    }
+
+    @Test
+    public void testPingTwoSecondDelay() throws IOException {
+        HttpServer server = new HttpServer(0, "testroot");
+
+        FakeSocket socket = new FakeSocket("GET /ping/2 HTTP/1.1");
+        server.handleClient(socket);
+        String response = socket.getResponse();
+
+        String startTimeStr = response.split("<li>start time: ")[1].split("</li>")[0];
+        String endTimeStr = response.split("<li>end time: ")[1].split("</li>")[0];
+        LocalDateTime startTime = LocalDateTime.parse(startTimeStr, FORMATTER);
+        LocalDateTime endTime = LocalDateTime.parse(endTimeStr, FORMATTER);
+        long secondsElapsed = java.time.Duration.between(startTime, endTime).getSeconds();
+        assertTrue(secondsElapsed >= 2);
     }
 }

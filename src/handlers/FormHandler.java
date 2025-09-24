@@ -1,8 +1,12 @@
-package server;
+package handlers;
+
+import server.MultipartParser;
+import server.Request;
+import server.Response;
 
 import java.util.Map;
 
-import static server.SuccessHandler.getSuccessResponse;
+import static handlers.SuccessHandler.getSuccessResponse;
 
 public class FormHandler implements RequestHandler {
 

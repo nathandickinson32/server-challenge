@@ -1,8 +1,11 @@
-package server;
+package handlers;
+
+import server.Request;
+import server.Response;
 
 import java.io.File;
 
-import static server.SuccessHandler.getSuccessResponse;
+import static handlers.SuccessHandler.getSuccessResponse;
 
 public class ImageListingHandler implements RequestHandler {
 

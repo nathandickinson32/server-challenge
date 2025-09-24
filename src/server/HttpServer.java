@@ -1,5 +1,7 @@
 package server;
 
+import handlers.*;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;

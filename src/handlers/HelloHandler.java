@@ -1,11 +1,14 @@
-package server;
+package handlers;
+
+import server.Request;
+import server.Response;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import static server.SuccessHandler.getSuccessResponse;
+import static handlers.SuccessHandler.getSuccessResponse;
 
 public class HelloHandler implements RequestHandler {
 

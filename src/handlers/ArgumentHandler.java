@@ -1,4 +1,4 @@
-package server;
+package handlers;
 
 import java.io.File;
 
@@ -14,7 +14,6 @@ public class ArgumentHandler {
 
     private static int port = 80;
     private static String rootDir = ".";
-    private static boolean printConfig = false;
     private static boolean exit = false;
 
     public static void parseArguments(String[] args) {

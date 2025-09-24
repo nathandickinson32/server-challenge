@@ -2,7 +2,7 @@ package tests;
 
 import org.junit.Test;
 import server.FakeSocket;
-import server.GuessHandler;
+import handlers.GuessHandler;
 import server.HttpServer;
 
 import java.io.IOException;

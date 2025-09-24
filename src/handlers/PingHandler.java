@@ -1,9 +1,12 @@
-package server;
+package handlers;
+
+import server.Request;
+import server.Response;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static server.SuccessHandler.getSuccessResponse;
+import static handlers.SuccessHandler.getSuccessResponse;
 
 public class PingHandler implements RequestHandler {
     public static final DateTimeFormatter FORMATTER =

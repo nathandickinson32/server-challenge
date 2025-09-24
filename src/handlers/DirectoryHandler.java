@@ -1,10 +1,13 @@
-package server;
+package handlers;
+
+import server.Request;
+import server.Response;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static server.SuccessHandler.getSuccessResponse;
+import static handlers.SuccessHandler.getSuccessResponse;
 
 public class DirectoryHandler implements RequestHandler {
 

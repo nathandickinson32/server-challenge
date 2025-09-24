@@ -1,4 +1,7 @@
-package server;
+package handlers;
+
+import server.Request;
+import server.Response;
 
 import java.io.IOException;
 

@@ -1,4 +1,6 @@
-package server;
+package handlers;
+
+import server.Response;
 
 import java.nio.charset.StandardCharsets;
 

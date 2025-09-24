@@ -1,7 +1,7 @@
 package tests;
 
 import org.junit.Test;
-import server.ArgumentHandler;
+import handlers.ArgumentHandler;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;

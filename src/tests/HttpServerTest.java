@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
 import static org.junit.Assert.*;
-import static server.PingHandler.FORMATTER;
+import static handlers.PingHandler.FORMATTER;
 
 public class HttpServerTest {
 

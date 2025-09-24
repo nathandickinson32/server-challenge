@@ -1,10 +1,14 @@
-package server;
+package handlers;
+
+import server.GameState;
+import server.Request;
+import server.Response;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.net.URLDecoder;
 
-import static server.SuccessHandler.getSuccessResponse;
+import static handlers.SuccessHandler.getSuccessResponse;
 
 public class GuessHandler implements RequestHandler {
 

@@ -3,14 +3,17 @@ package handlers;
 import server.Request;
 import server.Response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 import static handlers.SuccessHandler.getSuccessResponse;
 
 public class PingHandler implements RequestHandler {
+
     public static final DateTimeFormatter FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                    .withZone(ZoneId.systemDefault());
 
     @Override
     public Response handle(Request request) {
@@ -20,11 +23,10 @@ public class PingHandler implements RequestHandler {
         if (path.startsWith("/ping/")) {
             try {
                 delaySeconds = Integer.parseInt(path.substring("/ping/".length()));
-            } catch (NumberFormatException ignored) {
-            }
+            } catch (NumberFormatException ignored) {}
         }
 
-        LocalDateTime start = LocalDateTime.now();
+        Instant start = Instant.now();
 
         if (delaySeconds > 0) {
             try {
@@ -34,8 +36,7 @@ public class PingHandler implements RequestHandler {
             }
         }
 
-        LocalDateTime end = LocalDateTime.now();
-
+        Instant end = Instant.now();
         String body = "<h2>Ping</h2>\n" +
                 "<li>start time: " + FORMATTER.format(start) + "</li>\n" +
                 "<li>end time: " + FORMATTER.format(end) + "</li>\n";

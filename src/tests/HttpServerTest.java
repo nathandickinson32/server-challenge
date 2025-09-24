@@ -181,7 +181,7 @@ public class HttpServerTest {
     }
 
     @Test
-    public void testPingNoDelay() throws IOException {
+    public void testPingHandler() throws IOException {
         HttpServer server = new HttpServer(0, "testroot");
         FakeSocket socket = new FakeSocket("GET /ping HTTP/1.1");
         server.handleClient(socket);
@@ -206,8 +206,8 @@ public class HttpServerTest {
         String endTimeStr = response.split("<li>end time: ")[1].split("</li>")[0];
         LocalDateTime startTime = LocalDateTime.parse(startTimeStr, FORMATTER);
         LocalDateTime endTime = LocalDateTime.parse(endTimeStr, FORMATTER);
-        long secondsElapsed = java.time.Duration.between(startTime, endTime).getSeconds();
-        assertTrue(secondsElapsed >= 1);
+        long secondsPassed = java.time.Duration.between(startTime, endTime).getSeconds();
+        assertTrue(secondsPassed >= 1);
     }
 
     @Test
@@ -222,7 +222,7 @@ public class HttpServerTest {
         String endTimeStr = response.split("<li>end time: ")[1].split("</li>")[0];
         LocalDateTime startTime = LocalDateTime.parse(startTimeStr, FORMATTER);
         LocalDateTime endTime = LocalDateTime.parse(endTimeStr, FORMATTER);
-        long secondsElapsed = java.time.Duration.between(startTime, endTime).getSeconds();
-        assertTrue(secondsElapsed >= 2);
+        long secondsPassed = java.time.Duration.between(startTime, endTime).getSeconds();
+        assertTrue(secondsPassed >= 2);
     }
 }

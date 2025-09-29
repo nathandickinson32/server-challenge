@@ -1,20 +1,14 @@
 package handlers;
 
 import server.MultipartParser;
-import server.Request;
-import server.Response;
+import dto.Request;
+import dto.Response;
 
 import java.util.Map;
 
 import static handlers.SuccessHandler.getSuccessResponse;
 
 public class FormHandler implements RequestHandler {
-
-    private final String root;
-
-    public FormHandler(String root) {
-        this.root = root;
-    }
 
     @Override
     public Response handle(Request request) {

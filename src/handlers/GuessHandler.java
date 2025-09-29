@@ -1,8 +1,8 @@
 package handlers;
 
-import server.Request;
-import server.Response;
-import server.GameState;
+import dto.Request;
+import dto.Response;
+import dto.GameState;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;

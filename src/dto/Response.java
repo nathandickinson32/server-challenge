@@ -1,4 +1,4 @@
-package server;
+package dto;
 
 import java.util.HashMap;
 import java.util.Map;

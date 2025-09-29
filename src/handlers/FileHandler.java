@@ -1,7 +1,7 @@
 package handlers;
 
-import server.Request;
-import server.Response;
+import dto.Request;
+import dto.Response;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,14 +19,6 @@ public class FileHandler implements RequestHandler {
     @Override
     public Response handle(Request request) throws IOException {
         Response response = new Response();
-
-        if (!file.exists() || !file.isFile()) {
-            response.setStatusCode(404);
-            response.setStatusMessage("Not Found");
-            response.setBody("<h1>404 Not Found</h1>");
-            response.addHeader("Content-Type", "text/html");
-            return response;
-        }
 
         byte[] fileBytes = Files.readAllBytes(file.toPath());
         String contentType = Files.probeContentType(file.toPath());

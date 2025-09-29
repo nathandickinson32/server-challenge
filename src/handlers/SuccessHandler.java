@@ -1,6 +1,6 @@
 package handlers;
 
-import server.Response;
+import dto.Response;
 
 import java.nio.charset.StandardCharsets;
 

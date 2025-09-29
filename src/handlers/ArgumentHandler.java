@@ -13,7 +13,7 @@ public class ArgumentHandler {
                     """;
 
     private static int port = 80;
-    private static String rootDir = ".";
+    private static String rootDir = System.getProperty("user.dir");
     private static boolean exit = false;
 
     public static void parseArguments(String[] args) {
@@ -59,10 +59,12 @@ public class ArgumentHandler {
     }
 
     public static int getPort() {
+
         return port;
     }
 
     public static String getRootDir() {
+
         return rootDir;
     }
 

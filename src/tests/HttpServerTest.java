@@ -1,5 +1,6 @@
 package tests;
 
+import handlers.*;
 import org.junit.Test;
 import server.FakeSocket;
 import server.HttpServer;
@@ -13,6 +14,26 @@ import static handlers.PingHandler.FORMATTER;
 
 public class HttpServerTest {
 
+    private static final String TEST_ROOT = "testroot";
+
+    public static HttpServer createTestServer() {
+        HttpServer server = new HttpServer(0, TEST_ROOT);
+        server.addHandler("GET", "/index", new FileHandler(TEST_ROOT, "index.html"));
+        server.addHandler("GET", "/hello", new HelloHandler(TEST_ROOT, "hello.html"));
+        var formHandler = new FormHandler();
+        server.addHandler("GET", "/form", formHandler);
+        server.addHandler("POST", "/form", formHandler);
+        var pingHandler = new PingHandler();
+        server.addHandler("GET", "/ping", pingHandler);
+        server.addHandler("GET", "/ping/1", pingHandler);
+        server.addHandler("GET", "/ping/2", pingHandler);
+        server.addHandler("GET", "/listing", new DirectoryHandler(TEST_ROOT));
+        server.addHandler("GET", "/listing/img", new DirectoryHandler(TEST_ROOT));
+        server.addHandler("GET", "/", new DirectoryHandler(TEST_ROOT));
+
+        return server;
+    }
+
     @Test
     public void testRespondsToInvalidPath() throws IOException {
         HttpServer server = new HttpServer(0, ".");
@@ -24,7 +45,7 @@ public class HttpServerTest {
 
     @Test
     public void testRespondsToHelloHtml() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         FakeSocket socket = new FakeSocket("GET /hello HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
@@ -37,7 +58,7 @@ public class HttpServerTest {
 
     @Test
     public void testRespondsHelloWorld() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         FakeSocket socket = new FakeSocket("GET / HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
@@ -52,7 +73,7 @@ public class HttpServerTest {
 
     @Test
     public void testRespondsToIndex() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         FakeSocket socket = new FakeSocket("GET /index HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
@@ -67,7 +88,7 @@ public class HttpServerTest {
 
     @Test
     public void testRequestForListing() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         FakeSocket socket = new FakeSocket("GET /listing HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
@@ -82,7 +103,7 @@ public class HttpServerTest {
 
     @Test
     public void testRequestForListingImages() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         FakeSocket socket = new FakeSocket("GET /listing/img HTTP/1.1");
         server.handleClient(socket);
 
@@ -141,7 +162,7 @@ public class HttpServerTest {
 
     @Test
     public void testGetFormWithQueryParams() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         FakeSocket socket = new FakeSocket("GET /form?foo=1&bar=2 HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
@@ -154,7 +175,7 @@ public class HttpServerTest {
 
     @Test
     public void testPostFormFileUpload() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
 
         String body = "--XYZ\r\n Content-Disposition: form-data; name=\"file\"; filename=\"autobot.jpg\"\r\n" +
                 "Content-Type: image/jpeg\r\n\r\n" +
@@ -182,7 +203,7 @@ public class HttpServerTest {
 
     @Test
     public void testPingHandler() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         FakeSocket socket = new FakeSocket("GET /ping HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
@@ -196,7 +217,7 @@ public class HttpServerTest {
 
     @Test
     public void testPingOneSecondDelay() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
 
         FakeSocket socket = new FakeSocket("GET /ping/1 HTTP/1.1");
         server.handleClient(socket);
@@ -212,7 +233,7 @@ public class HttpServerTest {
 
     @Test
     public void testPingTwoSecondDelay() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
 
         FakeSocket socket = new FakeSocket("GET /ping/2 HTTP/1.1");
         server.handleClient(socket);

@@ -1,8 +1,8 @@
 package tests;
 
+import handlers.*;
 import org.junit.Test;
 import server.FakeSocket;
-import handlers.GuessHandler;
 import server.HttpServer;
 
 import java.io.IOException;
@@ -11,9 +11,19 @@ import static org.junit.Assert.assertTrue;
 
 public class GuessHandlerTest {
 
+    private static final String TEST_ROOT = "testroot";
+
+    public static HttpServer createTestServer() {
+        HttpServer server = new HttpServer(0, TEST_ROOT);
+        var guessHandler = new GuessHandler();
+        server.addHandler("GET", "/guess", guessHandler);
+        server.addHandler("POST", "/guess", guessHandler);
+        return server;
+    }
+
     @Test
     public void testGetGuessInitialPage() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         FakeSocket fakeSocket = new FakeSocket("GET /guess HTTP/1.1");
         server.handleClient(fakeSocket);
         String response = fakeSocket.getResponse();
@@ -28,7 +38,7 @@ public class GuessHandlerTest {
 
     @Test
     public void testPostGuessTooLow() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         String sessionId = "test1";
         GuessHandler.setTestGame(sessionId, 50, 7);
 
@@ -55,7 +65,7 @@ public class GuessHandlerTest {
 
     @Test
     public void testPostGuessTooHigh() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         String sessionId = "test2";
         GuessHandler.setTestGame(sessionId, 50, 7);
 
@@ -78,7 +88,7 @@ public class GuessHandlerTest {
 
     @Test
     public void testPostCorrectGuess() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         String sessionId = "test3";
         GuessHandler.setTestGame(sessionId, 50, 7);
 
@@ -102,7 +112,7 @@ public class GuessHandlerTest {
 
     @Test
     public void testPostOutOfAttempts() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         String sessionId = "test4";
         GuessHandler.setTestGame(sessionId, 50, 1);
 
@@ -126,7 +136,7 @@ public class GuessHandlerTest {
 
     @Test
     public void testNewSessionStartsFreshGame() throws Exception {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = createTestServer();
         String session1 = "test5";
 
         FakeSocket postSocket1 = new FakeSocket(

@@ -84,7 +84,6 @@ public class Request {
         return protocol;
     }
 
-
     public String getHeader(String key) {
         return headers.get(key);
     }

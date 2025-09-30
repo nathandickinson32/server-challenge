@@ -18,6 +18,7 @@ public class HttpServerTest {
 
     public static HttpServer createTestServer() {
         HttpServer server = new HttpServer(0, TEST_ROOT);
+
         server.addHandler("GET", "/index", new FileHandler(TEST_ROOT, "index.html"));
         server.addHandler("GET", "/hello", new HelloHandler(TEST_ROOT, "hello.html"));
         var formHandler = new FormHandler();

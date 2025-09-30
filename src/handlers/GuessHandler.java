@@ -1,8 +1,8 @@
 package handlers;
 
-import dto.Request;
-import dto.Response;
-import dto.GameState;
+import server.Request;
+import server.Response;
+import server.GameState;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -32,7 +32,7 @@ public class GuessHandler implements RequestHandler {
         return response;
     }
 
-    private static String handleSession(Request request, String sessionId, Response response) {
+    private String handleSession(Request request, String sessionId, Response response) {
         if (sessionId == null || sessionId.isEmpty()) {
             String cookieHeader = request.getHeader("Cookie");
             if (cookieHeader != null) {
@@ -117,13 +117,13 @@ public class GuessHandler implements RequestHandler {
         return params;
     }
 
-    private static void maybeResumeGame(String sessionId, GameState game) {
+    private void maybeResumeGame(String sessionId, GameState game) {
         if (!lastMessages.containsKey(sessionId)) {
             lastMessages.put(sessionId, getStartingMessage(game));
         }
     }
 
-    private static GameState maybeNewGame(GameState game, String sessionId) {
+    private GameState maybeNewGame(GameState game, String sessionId) {
         if (game == null) {
             game = new GameState();
             gameSessions.put(sessionId, game);
@@ -131,7 +131,7 @@ public class GuessHandler implements RequestHandler {
         return game;
     }
 
-    private static String getStartingMessage(GameState game) {
+    private String getStartingMessage(GameState game) {
         return "I'm thinking of a number between 1 and 100. You have " + game.getAttemptsLeft() + " tries!";
     }
 

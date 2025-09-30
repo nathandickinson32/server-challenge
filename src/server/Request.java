@@ -1,4 +1,4 @@
-package dto;
+package server;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +11,7 @@ public class Request {
     private String path;
     private String protocol;
     private byte[] rawBody = new byte[0];
+    private Map<String, String> params = new HashMap<>();
     public Map<String, String> headers = new HashMap<>();
 
     public static Request requestParser(InputStream inputStream) throws IOException {
@@ -19,6 +20,7 @@ public class Request {
         String requestLine = in.readLine();
         request.parseRequestLine(requestLine);
         request.parseHeaders(in);
+        request.getQueryParams();
 
         String strContentLength = request.headers.get("Content-Length");
         if (strContentLength != null) {
@@ -56,8 +58,7 @@ public class Request {
         }
     }
 
-    public Map<String, String> getQueryParams() {
-        Map<String, String> params = new HashMap<>();
+    public void getQueryParams() {
         if (path != null && path.contains("?")) {
             String[] parts = path.split("\\?", 2);
             String query = parts[1];
@@ -73,7 +74,6 @@ public class Request {
                 params.put(key, value);
             }
         }
-        return params;
     }
 
     public String getPath() {
@@ -94,5 +94,9 @@ public class Request {
 
     public byte[] getRawBody() {
         return rawBody;
+    }
+
+    public Map<String, String> getParams() {
+        return params;
     }
 }

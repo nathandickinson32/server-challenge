@@ -1,7 +1,7 @@
 package handlers;
 
-import dto.Request;
-import dto.Response;
+import server.Request;
+import server.Response;
 
 import java.io.File;
 import java.io.IOException;

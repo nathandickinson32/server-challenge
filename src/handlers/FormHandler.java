@@ -1,8 +1,8 @@
 package handlers;
 
 import server.MultipartParser;
-import dto.Request;
-import dto.Response;
+import server.Request;
+import server.Response;
 
 import java.util.Map;
 
@@ -15,7 +15,7 @@ public class FormHandler implements RequestHandler {
         Response response = new Response();
         if ("GET".equals(request.getMethod())) {
             StringBuilder body = new StringBuilder();
-            Map<String, String> params = request.getQueryParams();
+            Map<String, String> params = request.getParams();
 
             body.append("<h2>GET Form</h2><ul>");
             for (Map.Entry<String, String> entry : params.entrySet()) {

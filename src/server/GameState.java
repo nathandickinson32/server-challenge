@@ -1,4 +1,4 @@
-package dto;
+package server;
 
 import java.util.Random;
 

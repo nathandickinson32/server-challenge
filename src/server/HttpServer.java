@@ -1,8 +1,5 @@
 package server;
 
-import dto.Request;
-import dto.Response;
-import dto.RoutePair;
 import handlers.*;
 
 import java.io.*;
@@ -22,11 +19,25 @@ public class HttpServer extends AbstractServer {
     private void addHandlers() {
         handlers.put(new RoutePair("GET", "/index"), new FileHandler(root, "index.html"));
         handlers.put(new RoutePair("GET", "/hello"), new HelloHandler(root, "hello.html"));
-        handlers.put(new RoutePair("GET", "/form"), new FormHandler());
-        handlers.put(new RoutePair("POST", "/form"), new FormHandler());
+
+        var formHandler = new FormHandler();
+        handlers.put(new RoutePair("GET", "/form"), formHandler);
+        handlers.put(new RoutePair("POST", "/form"), formHandler);
         handlers.put(new RoutePair("GET", "/ping"), new PingHandler());
-        handlers.put(new RoutePair("GET", "/guess"), new GuessHandler());
-        handlers.put(new RoutePair("POST", "/guess"), new GuessHandler());
+        handlers.put(new RoutePair("GET", "/ping/1"), new PingHandler());
+        handlers.put(new RoutePair("GET", "/ping/2"), new PingHandler());
+
+        var guessHandler = new GuessHandler();
+        handlers.put(new RoutePair("GET", "/guess"), guessHandler);
+        handlers.put(new RoutePair("POST", "/guess"), guessHandler);
+        handlers.put(new RoutePair("GET", "/listing"), new DirectoryHandler(root, "/listing"));
+        handlers.put(new RoutePair("GET", "/listing/img"), new DirectoryHandler(root, "/listing/img"));
+        handlers.put(new RoutePair("GET", "/"), new DirectoryHandler(root, ""));
+//        handlers.put(new RoutePair("GET", "*"), new DirectoryHandler(null));
+    }
+
+    public void addHandler(String method, String path, RequestHandler handler) {
+        handlers.put(new RoutePair(method, path), handler);
     }
 
     @Override
@@ -41,16 +52,7 @@ public class HttpServer extends AbstractServer {
         RequestHandler handler = handlers.get(new RoutePair(normalizedMethod, cleanPath));
         if (handler != null) return handler.handle(request);
 
-        if (cleanPath.startsWith("/ping")) {
-            return handlers.get(new RoutePair(normalizedMethod, "/ping")).handle(request);
-        }
-
         File file = new File(root, cleanPath);
-
-        if (cleanPath.startsWith("/listing") || file.isDirectory()) {
-            return new DirectoryHandler(root, cleanPath).handle(request);
-        }
-
         if (file.isFile()) {
             return new FileHandler(root, cleanPath).handle(request);
         }

@@ -1,6 +1,6 @@
 package server;
 
-import handlers.ArgumentHandler;
+import handlers.*;
 
 import java.io.IOException;
 
@@ -15,6 +15,26 @@ public class Main {
         int port = ArgumentHandler.getPort();
         String rootDir = ArgumentHandler.getRootDir();
         HttpServer server = new HttpServer(port, rootDir);
+        addHandlers(server);
         server.start();
+    }
+
+    private static void addHandlers(HttpServer server) {
+        String root = ArgumentHandler.getRootDir();
+        server.addHandler("GET", "/index", new FileHandler(root, "index.html"));
+        server.addHandler("GET", "/index", new FileHandler(root, "index.html"));
+        server.addHandler("GET", "/hello", new HelloHandler(root, "hello.html"));
+        var formHandler = new FormHandler();
+        server.addHandler("GET", "/form", formHandler);
+        server.addHandler("POST", "/form", formHandler);
+        server.addHandler("GET", "/ping", new PingHandler());
+        server.addHandler("GET", "/ping/1", new PingHandler());
+        server.addHandler("GET", "/ping/2", new PingHandler());
+        var guessHandler = new GuessHandler();
+        server.addHandler("GET", "/guess", guessHandler);
+        server.addHandler("POST", "/guess", guessHandler);
+        server.addHandler("GET", "/listing", new DirectoryHandler(root, "/listing"));
+        server.addHandler("GET", "/listing/img", new DirectoryHandler(root, "/listing/img"));
+        server.addHandler("GET", "/", new DirectoryHandler(root, ""));
     }
 }

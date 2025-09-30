@@ -1,8 +1,5 @@
 package server;
 
-import dto.Request;
-import dto.Response;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;

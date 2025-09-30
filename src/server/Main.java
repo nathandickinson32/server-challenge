@@ -14,7 +14,7 @@ public class Main {
         int port = ArgumentHandler.getPort();
         String rootDir = ArgumentHandler.getRootDir();
 
-        HttpServer server = new HttpServer(port, rootDir);
+        HttpServer server = new HttpServer(port, new DirectoryHandler(rootDir));
         addHandlers(server, rootDir);
         server.start();
     }

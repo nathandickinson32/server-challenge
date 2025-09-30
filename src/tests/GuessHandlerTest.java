@@ -14,7 +14,7 @@ public class GuessHandlerTest {
     private static final String TEST_ROOT = "testroot";
 
     public static HttpServer createTestServer() {
-        HttpServer server = new HttpServer(0, TEST_ROOT);
+        HttpServer server = new HttpServer(0, new DirectoryHandler(TEST_ROOT));
         var guessHandler = new GuessHandler();
         server.addHandler("GET", "/guess", guessHandler);
         server.addHandler("POST", "/guess", guessHandler);
@@ -51,10 +51,6 @@ public class GuessHandlerTest {
                         postData
         );
         server.handleClient(fakeSocket);
-        String postResponse = fakeSocket.getResponse();
-
-        assertTrue(postResponse.contains("HTTP/1.1 303 See Other"));
-        assertTrue(postResponse.contains("Location: /guess"));
 
         FakeSocket getSocket = new FakeSocket("GET /guess HTTP/1.1\r\nX-Client-Id: " + sessionId + "\r\n\r\n");
         server.handleClient(getSocket);

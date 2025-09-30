@@ -17,17 +17,20 @@ public class HttpServerTest {
     private static final String TEST_ROOT = "testroot";
 
     public static HttpServer createTestServer() {
-        HttpServer server = new HttpServer(0, TEST_ROOT);
+        HttpServer server = new HttpServer(0, new DirectoryHandler(TEST_ROOT));
 
         server.addHandler("GET", "/index", new FileHandler(TEST_ROOT, "index.html"));
         server.addHandler("GET", "/hello", new HelloHandler(TEST_ROOT, "hello.html"));
+
         var formHandler = new FormHandler();
         server.addHandler("GET", "/form", formHandler);
         server.addHandler("POST", "/form", formHandler);
+
         var pingHandler = new PingHandler();
         server.addHandler("GET", "/ping", pingHandler);
         server.addHandler("GET", "/ping/1", pingHandler);
         server.addHandler("GET", "/ping/2", pingHandler);
+
         server.addHandler("GET", "/listing", new DirectoryHandler(TEST_ROOT));
         server.addHandler("GET", "/listing/img", new DirectoryHandler(TEST_ROOT));
         server.addHandler("GET", "/", new DirectoryHandler(TEST_ROOT));
@@ -37,7 +40,7 @@ public class HttpServerTest {
 
     @Test
     public void testRespondsToInvalidPath() throws IOException {
-        HttpServer server = new HttpServer(0, ".");
+        HttpServer server = new HttpServer(0, new DirectoryHandler("."));
         FakeSocket socket = new FakeSocket("GET /blah HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
@@ -50,6 +53,7 @@ public class HttpServerTest {
         FakeSocket socket = new FakeSocket("GET /hello HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
+
         assertTrue(response.contains("HTTP/1.1 200 OK"));
         assertTrue(response.contains("Server"));
         assertTrue(response.contains("Content-Type: text/html"));
@@ -64,6 +68,7 @@ public class HttpServerTest {
         server.handleClient(socket);
         String response = socket.getResponse();
         int contentLength = Integer.parseInt(response.split("Content-Length: ")[1].split("\r\n")[0]);
+
         assertTrue(response.contains("HTTP/1.1 200 OK"));
         assertTrue(response.contains("Server"));
         assertTrue(response.contains("Content-Type: text/html"));
@@ -79,6 +84,7 @@ public class HttpServerTest {
         server.handleClient(socket);
         String response = socket.getResponse();
         int contentLength = Integer.parseInt(response.split("Content-Length: ")[1].split("\r\n")[0]);
+
         assertTrue(response.contains("HTTP/1.1 200 OK"));
         assertTrue(response.contains("Server"));
         assertTrue(response.contains("Content-Type: text/html"));
@@ -93,6 +99,7 @@ public class HttpServerTest {
         FakeSocket socket = new FakeSocket("GET /listing HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
+
         assertTrue(response.contains("HTTP/1.1 200 OK"));
         assertTrue(response.contains("Server"));
         assertTrue(response.contains("Content-Type: text/html"));
@@ -107,7 +114,6 @@ public class HttpServerTest {
         HttpServer server = createTestServer();
         FakeSocket socket = new FakeSocket("GET /listing/img HTTP/1.1");
         server.handleClient(socket);
-
         String response = socket.getResponse();
 
         assertTrue(response.contains("HTTP/1.1 200 OK"));
@@ -122,11 +128,11 @@ public class HttpServerTest {
 
     @Test
     public void testRequestForPdf() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = new HttpServer(0, new DirectoryHandler(TEST_ROOT));
         FakeSocket socket = new FakeSocket("GET /hello.pdf HTTP/1.1");
         server.handleClient(socket);
-
         String response = socket.getResponse();
+
         assertTrue(response.contains("HTTP/1.1 200 OK"));
         assertTrue(response.contains("Server"));
         assertTrue(response.contains("Content-Type: application/pdf"));
@@ -135,9 +141,8 @@ public class HttpServerTest {
 
     @Test
     public void testRequestForPng() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = new HttpServer(0, new DirectoryHandler(TEST_ROOT));
         FakeSocket socket = new FakeSocket("GET /img/decepticon.png HTTP/1.1");
-
         server.handleClient(socket);
         String response = socket.getResponse();
 
@@ -149,9 +154,8 @@ public class HttpServerTest {
 
     @Test
     public void testRequestForJpg() throws IOException {
-        HttpServer server = new HttpServer(0, "testroot");
+        HttpServer server = new HttpServer(0, new DirectoryHandler(TEST_ROOT));
         FakeSocket socket = new FakeSocket("GET /img/decepticon.jpg HTTP/1.1");
-
         server.handleClient(socket);
         String response = socket.getResponse();
 
@@ -167,6 +171,7 @@ public class HttpServerTest {
         FakeSocket socket = new FakeSocket("GET /form?foo=1&bar=2 HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
+
         assertTrue(response.contains("HTTP/1.1 200 OK"));
         assertTrue(response.contains("Content-Type: text/html"));
         assertTrue(response.contains("<h2>GET Form</h2>"));
@@ -191,7 +196,6 @@ public class HttpServerTest {
                 body;
 
         FakeSocket socket = new FakeSocket(request);
-
         server.handleClient(socket);
         String response = socket.getResponse();
 
@@ -219,7 +223,6 @@ public class HttpServerTest {
     @Test
     public void testPingOneSecondDelay() throws IOException {
         HttpServer server = createTestServer();
-
         FakeSocket socket = new FakeSocket("GET /ping/1 HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
@@ -235,7 +238,6 @@ public class HttpServerTest {
     @Test
     public void testPingTwoSecondDelay() throws IOException {
         HttpServer server = createTestServer();
-
         FakeSocket socket = new FakeSocket("GET /ping/2 HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();

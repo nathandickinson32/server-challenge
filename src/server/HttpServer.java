@@ -9,36 +9,32 @@ import java.util.Map;
 
 public class HttpServer extends AbstractServer {
 
-    private final String root;
-    private final HashMap<RoutePair, RequestHandler> handlers = new HashMap<>();
+    private final Map<RoutePair, RequestHandler> handlers = new HashMap<>();
+    private final RequestHandler fallbackHandler;
 
-    public HttpServer(int port, String root) {
+    public HttpServer(int port, RequestHandler fallbackHandler) {
         super(port);
-        this.root = root;
+        this.fallbackHandler = fallbackHandler;
     }
 
     public void addHandler(String method, String path, RequestHandler handler) {
-        handlers.put(new RoutePair(method, path), handler);
+        handlers.put(new RoutePair(method.toUpperCase(), path), handler);
     }
 
     @Override
     protected void handleSocket(InputStream in, OutputStream out) throws IOException {
         Request request = Request.requestParser(in);
 
-        String path = request.getPath();
-        String cleanPath = path.split("\\?")[0];
-        if (cleanPath.endsWith("/") && cleanPath.length() > 1) {
-            cleanPath = cleanPath.substring(0, cleanPath.length() - 1);
-        }
-
+        String cleanPath = request.getPath().split("\\?")[0];
         String method = request.getMethod().toUpperCase();
-        RequestHandler handler = handlers.get(new RoutePair(method, cleanPath));
 
+        RequestHandler handler = handlers.get(new RoutePair(method, cleanPath));
         Response response;
+
         if (handler != null) {
             response = handler.handle(request);
         } else {
-            response = new DirectoryHandler(root).handle(request);
+            response = fallbackHandler.handle(request);
         }
 
         sendResponse(response, out);

@@ -39,20 +39,20 @@ public class GuessHandlerTest {
     @Test
     public void testPostGuessTooLow() throws IOException {
         HttpServer server = createTestServer();
-        String sessionId = "test1";
-        GuessHandler.setTestGame(sessionId, 50, 7);
+        String sessionCookie = "sessionId=test1";
+        GuessHandler.setTestGame("test1", 50, 7);
 
         String postData = "guess=10";
         FakeSocket fakeSocket = new FakeSocket(
                 "POST /guess HTTP/1.1\r\n" +
                         "Content-Type: application/x-www-form-urlencoded\r\n" +
-                        "X-Client-Id: " + sessionId + "\r\n" +
+                        "Cookie: " + sessionCookie + "\r\n" +
                         "Content-Length: " + postData.length() + "\r\n\r\n" +
                         postData
         );
         server.handleClient(fakeSocket);
 
-        FakeSocket getSocket = new FakeSocket("GET /guess HTTP/1.1\r\nX-Client-Id: " + sessionId + "\r\n\r\n");
+        FakeSocket getSocket = new FakeSocket("GET /guess HTTP/1.1\r\nCookie: " + sessionCookie + "\r\n\r\n");
         server.handleClient(getSocket);
         String getResponse = getSocket.getResponse();
 
@@ -62,20 +62,20 @@ public class GuessHandlerTest {
     @Test
     public void testPostGuessTooHigh() throws IOException {
         HttpServer server = createTestServer();
-        String sessionId = "test2";
-        GuessHandler.setTestGame(sessionId, 50, 7);
+        String sessionCookie = "sessionId=test2";
+        GuessHandler.setTestGame("test2", 50, 7);
 
         String postData = "guess=90";
         FakeSocket socket = new FakeSocket(
                 "POST /guess HTTP/1.1\r\n" +
                         "Content-Type: application/x-www-form-urlencoded\r\n" +
-                        "X-Client-Id: " + sessionId + "\r\n" +
+                        "Cookie: " + sessionCookie + "\r\n" +
                         "Content-Length: " + postData.length() + "\r\n\r\n" +
                         postData
         );
         server.handleClient(socket);
 
-        FakeSocket getSocket = new FakeSocket("GET /guess HTTP/1.1\r\nX-Client-Id: " + sessionId + "\r\n\r\n");
+        FakeSocket getSocket = new FakeSocket("GET /guess HTTP/1.1\r\nCookie: " + sessionCookie + "\r\n\r\n");
         server.handleClient(getSocket);
         String getResponse = getSocket.getResponse();
 
@@ -85,20 +85,20 @@ public class GuessHandlerTest {
     @Test
     public void testPostCorrectGuess() throws IOException {
         HttpServer server = createTestServer();
-        String sessionId = "test3";
-        GuessHandler.setTestGame(sessionId, 50, 7);
+        String sessionCookie = "sessionId=test3";
+        GuessHandler.setTestGame("test3", 50, 7);
 
         String postData = "guess=50";
         FakeSocket socket = new FakeSocket(
                 "POST /guess HTTP/1.1\r\n" +
                         "Content-Type: application/x-www-form-urlencoded\r\n" +
-                        "X-Client-Id: " + sessionId + "\r\n" +
+                        "Cookie: " + sessionCookie + "\r\n" +
                         "Content-Length: " + postData.length() + "\r\n\r\n" +
                         postData
         );
         server.handleClient(socket);
 
-        FakeSocket getSocket = new FakeSocket("GET /guess HTTP/1.1\r\nX-Client-Id: " + sessionId + "\r\n\r\n");
+        FakeSocket getSocket = new FakeSocket("GET /guess HTTP/1.1\r\nCookie: " + sessionCookie + "\r\n\r\n");
         server.handleClient(getSocket);
         String getResponse = getSocket.getResponse();
 
@@ -109,20 +109,20 @@ public class GuessHandlerTest {
     @Test
     public void testPostOutOfAttempts() throws IOException {
         HttpServer server = createTestServer();
-        String sessionId = "test4";
-        GuessHandler.setTestGame(sessionId, 50, 1);
+        String sessionCookie = "sessionId=test4";
+        GuessHandler.setTestGame("test4", 50, 1);
 
         String postData = "guess=10";
         FakeSocket socket = new FakeSocket(
                 "POST /guess HTTP/1.1\r\n" +
                         "Content-Type: application/x-www-form-urlencoded\r\n" +
-                        "X-Client-Id: " + sessionId + "\r\n" +
+                        "Cookie: " + sessionCookie + "\r\n" +
                         "Content-Length: " + postData.length() + "\r\n\r\n" +
                         postData
         );
         server.handleClient(socket);
 
-        FakeSocket getSocket = new FakeSocket("GET /guess HTTP/1.1\r\nX-Client-Id: " + sessionId + "\r\n\r\n");
+        FakeSocket getSocket = new FakeSocket("GET /guess HTTP/1.1\r\nCookie: " + sessionCookie + "\r\n\r\n");
         server.handleClient(getSocket);
         String getResponse = getSocket.getResponse();
 
@@ -131,42 +131,42 @@ public class GuessHandlerTest {
     }
 
     @Test
-    public void testNewSessionStartsFreshGame() throws Exception {
+    public void testNewSessionStartsFreshGame() throws IOException {
         HttpServer server = createTestServer();
-        String session1 = "test5";
+        String sessionCookie1 = "sessionId=test5";
 
         FakeSocket postSocket1 = new FakeSocket(
                 "POST /guess HTTP/1.1\r\n" +
                         "Host: localhost\r\n" +
                         "Content-Type: application/x-www-form-urlencoded\r\n" +
                         "Content-Length: 7\r\n" +
-                        "X-Client-Id: " + session1 + "\r\n\r\n" +
+                        "Cookie: " + sessionCookie1 + "\r\n\r\n" +
                         "guess=1"
         );
         server.handleClient(postSocket1);
 
         FakeSocket getSocket1 = new FakeSocket(
                 "GET /guess HTTP/1.1\r\n" +
-                        "X-Client-Id: " + session1 + "\r\n\r\n"
+                        "Cookie: " + sessionCookie1 + "\r\n\r\n"
         );
         server.handleClient(getSocket1);
         String response1 = getSocket1.getResponse();
         assertTrue(response1.contains("Attempts left: 6"));
 
-        String session2 = "test6";
+        String sessionCookie2 = "sessionId=test6";
         FakeSocket postSocket2 = new FakeSocket(
                 "POST /guess HTTP/1.1\r\n" +
                         "Host: localhost\r\n" +
                         "Content-Type: application/x-www-form-urlencoded\r\n" +
                         "Content-Length: 7\r\n" +
-                        "X-Client-Id: " + session2 + "\r\n\r\n" +
+                        "Cookie: " + sessionCookie2 + "\r\n\r\n" +
                         "guess=2"
         );
         server.handleClient(postSocket2);
 
         FakeSocket getSocket2 = new FakeSocket(
                 "GET /guess HTTP/1.1\r\n" +
-                        "X-Client-Id: " + session2 + "\r\n\r\n"
+                        "Cookie: " + sessionCookie2 + "\r\n\r\n"
         );
         server.handleClient(getSocket2);
         String response2 = getSocket2.getResponse();

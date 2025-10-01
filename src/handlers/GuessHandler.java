@@ -20,27 +20,24 @@ public class GuessHandler implements RequestHandler {
     @Override
     public Response handle(Request request) {
         Response response = new Response();
-        String sessionId = request.getHeader("X-Client-Id");
-        sessionId = handleSession(request, sessionId, response);
+        String sessionId = handleSession(request, response);
         GameState game = gameSessions.get(sessionId);
         game = maybeNewGame(game, sessionId);
         maybeResumeGame(sessionId, game);
-
         handleGetRequest(request, sessionId, response);
         handlePostRequest(request, sessionId, game, response);
 
         return response;
     }
 
-    private String handleSession(Request request, String sessionId, Response response) {
-        if (sessionId == null || sessionId.isEmpty()) {
-            String cookieHeader = request.getHeader("Cookie");
-            if (cookieHeader != null) {
-                for (String cookie : cookieHeader.split(";")) {
-                    String[] kv = cookie.trim().split("=", 2);
-                    if (kv.length == 2 && kv[0].equals("sessionId")) {
-                        sessionId = kv[1];
-                    }
+    private String handleSession(Request request, Response response) {
+        String sessionId = null;
+        String cookieHeader = request.getHeader("Cookie");
+        if (cookieHeader != null) {
+            for (String cookie : cookieHeader.split(";")) {
+                String[] kv = cookie.trim().split("=", 2);
+                if (kv.length == 2 && kv[0].equals("sessionId")) {
+                    sessionId = kv[1];
                 }
             }
         }
@@ -49,6 +46,7 @@ public class GuessHandler implements RequestHandler {
             sessionId = UUID.randomUUID().toString();
             response.addHeader("Set-Cookie", "sessionId=" + sessionId);
         }
+
         return sessionId;
     }
 
@@ -59,7 +57,6 @@ public class GuessHandler implements RequestHandler {
                 String bodyStr = new String(request.getRawBody(), StandardCharsets.ISO_8859_1);
                 Map<String, String> params = parseForm(bodyStr);
                 String guessStr = params.get("guess");
-
                 lastMessages.put(sessionId, processGuess(sessionId, game, guessStr));
 
                 response.setStatusCode(303);
@@ -82,9 +79,7 @@ public class GuessHandler implements RequestHandler {
     }
 
     private String processGuess(String sessionId, GameState game, String guessStr) {
-
-        int guess;
-        guess = Integer.parseInt(guessStr);
+        int guess = Integer.parseInt(guessStr);
         game.decrementAttempts();
 
         if (guess == game.getTarget()) {

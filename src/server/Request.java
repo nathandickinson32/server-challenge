@@ -15,6 +15,26 @@ public class Request {
     private Map<String, String> params = new HashMap<>();
     public Map<String, String> headers = new HashMap<>();
 
+    public Request(String method, String path, String protocol) {
+        this.method = method;
+        this.path = path;
+        this.protocol = protocol;
+    }
+
+    public Request(String method, String path, String protocol, Map<String, String> params, Map<String, String> headers, byte[] body) {
+        this.method = method;
+        this.path = path;
+        this.protocol = protocol;
+        this.params = params != null ? params : new HashMap<>();
+        this.headers = headers != null ? headers : new HashMap<>();
+        this.rawBody = body != null ? body : new byte[0];
+    }
+
+
+    public Request() {
+
+    }
+
     public static Request requestParser(InputStream inputStream) throws IOException {
         Request request = new Request();
         BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.ISO_8859_1));

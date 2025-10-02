@@ -32,8 +32,8 @@ public class Response {
         return statusCode;
     }
 
-    public Response addHeader(String key, String value) {
-        headers.put(key, value);
+    public Response addHeader(String key, Object value) {
+        headers.put(key, value.toString());
         return this;
     }
 

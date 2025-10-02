@@ -15,7 +15,7 @@ public class NotFoundHandler implements RequestHandler {
         String body = "<h1>404 Not Found</h1>";
         response.setBody(body);
         response.addHeader("Content-Type", "text/html");
-        response.addHeader("Content-Length", String.valueOf(body.getBytes(StandardCharsets.ISO_8859_1).length));
+        response.addHeader("Content-Length", body.getBytes(StandardCharsets.ISO_8859_1).length);
         return response;
     }
 }

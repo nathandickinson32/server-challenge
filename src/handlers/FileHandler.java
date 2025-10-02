@@ -16,6 +16,10 @@ public class FileHandler implements RequestHandler {
         this.file = new File(root, relativePath);
     }
 
+    public FileHandler(File file) {
+        this.file = file;
+    }
+
     @Override
     public Response handle(Request request) throws IOException {
         Response response = new Response();
@@ -26,7 +30,7 @@ public class FileHandler implements RequestHandler {
 
         response.setBody(new String(fileBytes, StandardCharsets.ISO_8859_1));
         response.addHeader("Content-Type", contentType);
-        response.addHeader("Content-Length", String.valueOf(fileBytes.length));
+        response.addHeader("Content-Length", fileBytes.length);
         response.setStatusCode(200);
         response.setStatusMessage("OK");
         return response;

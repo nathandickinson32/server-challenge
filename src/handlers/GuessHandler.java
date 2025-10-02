@@ -6,14 +6,13 @@ import server.GameState;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.net.URLDecoder;
 
 public class GuessHandler implements RequestHandler {
 
-    private static final Map<String, GameState> gameSessions = new HashMap<>();
-    private static final Map<String, String> lastMessages = new HashMap<>();
+    private final Map<String, GameState> gameSessions = new HashMap<>();
+    private final Map<String, String> lastMessages = new HashMap<>();
 
-    public static void setTestGame(String sessionId, int target, int attempts) {
+    public void setTestGame(String sessionId, int target, int attempts) {
         gameSessions.put(sessionId, new GameState(target, attempts));
     }
 
@@ -21,26 +20,22 @@ public class GuessHandler implements RequestHandler {
     public Response handle(Request request) {
         Response response = new Response();
         String sessionId = handleSession(request, response);
+
         GameState game = gameSessions.get(sessionId);
         game = maybeNewGame(game, sessionId);
         maybeResumeGame(sessionId, game);
-        handleGetRequest(request, sessionId, response);
-        handlePostRequest(request, sessionId, game, response);
+
+        if ("POST".equals(request.getMethod())) {
+            handlePostRequest(request, sessionId, game, response);
+        } else if ("GET".equals(request.getMethod())) {
+            handleGetRequest(sessionId, response);
+        }
 
         return response;
     }
 
     private String handleSession(Request request, Response response) {
-        String sessionId = null;
-        String cookieHeader = request.getHeader("Cookie");
-        if (cookieHeader != null) {
-            for (String cookie : cookieHeader.split(";")) {
-                String[] kv = cookie.trim().split("=", 2);
-                if (kv.length == 2 && kv[0].equals("sessionId")) {
-                    sessionId = kv[1];
-                }
-            }
-        }
+        String sessionId = getSessionId(request);
 
         if (sessionId == null || sessionId.isEmpty()) {
             sessionId = UUID.randomUUID().toString();
@@ -50,32 +45,40 @@ public class GuessHandler implements RequestHandler {
         return sessionId;
     }
 
-    private void handlePostRequest(Request request, String sessionId, GameState game, Response response) {
-        if ("POST".equals(request.getMethod())) {
-            String contentType = request.getHeader("Content-Type");
-            if (contentType != null && contentType.startsWith("application/x-www-form-urlencoded")) {
-                String bodyStr = new String(request.getRawBody(), StandardCharsets.ISO_8859_1);
-                Map<String, String> params = parseForm(bodyStr);
-                String guessStr = params.get("guess");
-                lastMessages.put(sessionId, processGuess(sessionId, game, guessStr));
+    private static String getSessionId(Request request) {
+        String cookieHeader = request.getHeader("Cookie");
+        if (cookieHeader == null) return null;
 
-                response.setStatusCode(303);
-                response.setStatusMessage("See Other");
-                response.addHeader("Location", "/guess");
+        for (String cookie : cookieHeader.split(";")) {
+            String[] kv = cookie.trim().split("=", 2);
+            if (kv.length == 2 && kv[0].equals("sessionId")) {
+                return kv[1];
             }
         }
+        return null;
     }
 
-    private void handleGetRequest(Request request, String sessionId, Response response) {
-        if ("GET".equals(request.getMethod())) {
-            String message = lastMessages.get(sessionId);
-            response.setStatusCode(200);
-            response.setStatusMessage("OK");
-            response.setBody(buildPage(message));
-            response.addHeader("Content-Type", "text/html");
-            response.addHeader("Content-Length",
-                    String.valueOf(response.getBody().getBytes(StandardCharsets.ISO_8859_1).length));
+    private void handlePostRequest(Request request, String sessionId, GameState game, Response response) {
+        String guessStr = request.getParams().get("guess");
+
+        if (guessStr != null) {
+            lastMessages.put(sessionId, processGuess(sessionId, game, guessStr));
         }
+
+        response.setStatusCode(303);
+        response.setStatusMessage("See Other");
+        response.addHeader("Location", "/guess");
+    }
+
+    private void handleGetRequest(String sessionId, Response response) {
+        String message = lastMessages.get(sessionId);
+        response.setStatusCode(200);
+        response.setStatusMessage("OK");
+        response.setBody(buildPage(message));
+
+        int contentLength = response.getBody().getBytes(StandardCharsets.ISO_8859_1).length;
+        response.addHeader("Content-Type", "text/html");
+        response.addHeader("Content-Length", contentLength);
     }
 
     private String processGuess(String sessionId, GameState game, String guessStr) {
@@ -97,25 +100,8 @@ public class GuessHandler implements RequestHandler {
         }
     }
 
-    private Map<String, String> parseForm(String body) {
-        Map<String, String> params = new HashMap<>();
-        if (body == null || body.isEmpty()) return params;
-        for (String pair : body.split("&")) {
-            String[] kv = pair.split("=", 2);
-            if (kv.length == 2) {
-                params.put(
-                        URLDecoder.decode(kv[0], StandardCharsets.ISO_8859_1),
-                        URLDecoder.decode(kv[1], StandardCharsets.ISO_8859_1)
-                );
-            }
-        }
-        return params;
-    }
-
     private void maybeResumeGame(String sessionId, GameState game) {
-        if (!lastMessages.containsKey(sessionId)) {
-            lastMessages.put(sessionId, getStartingMessage(game));
-        }
+        lastMessages.putIfAbsent(sessionId, getStartingMessage(game));
     }
 
     private GameState maybeNewGame(GameState game, String sessionId) {

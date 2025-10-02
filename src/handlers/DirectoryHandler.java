@@ -18,45 +18,38 @@ public class DirectoryHandler implements RequestHandler {
 
     @Override
     public Response handle(Request request) throws IOException {
-        String requestPath = request.getPath().split("\\?")[0];
+        String requestPath = getRequestPath(request);
+        var filePath = requestPath.replaceFirst("^/listing", "");
+        var file = new File(root, filePath);
 
-        if (requestPath.endsWith("/") && requestPath.length() > 1) {
-            requestPath = requestPath.substring(0, requestPath.length() - 1);
-        }
-
-        File file;
-
-        if ("/listing/img".equals(requestPath)) {
-            file = new File(root, "img");
-        } else if ("/listing".equals(requestPath)) {
-            file = new File(root);
-        } else {
-            file = new File(root, requestPath);
-
-            if (file.isDirectory()) {
-                File indexFile = new File(file, "index.html");
-                if (indexFile.exists() && indexFile.isFile()) {
-                    return new FileHandler(root, requestPath + "/index.html").handle(request);
-                }
-            }
-        }
-
-        File[] files;
         if (file.isDirectory()) {
-            files = file.listFiles();
-        } else {
-            files = null;
+            return getIndexOrListing(request, file, requestPath);
+        } else if (file.exists()) {
+            return new FileHandler(file).handle(request);
         }
-
-        if (files != null) {
-            return buildListing(files, requestPath);
-        }
-
-        if (file.isFile()) {
-            return new FileHandler(root, requestPath).handle(request);
-        }
-
         return new NotFoundHandler().handle(request);
+    }
+
+    private Response getIndexOrListing(Request request, File file, String requestPath) throws IOException {
+        File indexFile = new File(file, "index.html");
+        if (isNotListingFile(indexFile, requestPath)) {
+            return new FileHandler(indexFile).handle(request);
+        }
+        return buildListing(file.listFiles(), requestPath);
+    }
+
+    private static boolean isNotListingFile(File file, String requestPath) {
+        return file.exists()
+                && file.isFile()
+                && !"/listing".equals(requestPath);
+    }
+
+    private static String getRequestPath(Request request) {
+        String requestPath = request.getPath().split("\\?")[0];
+        if ("/".equals(requestPath)) {
+            return "/";
+        }
+        return requestPath.replaceFirst("/$", "");
     }
 
     private Response buildListing(File[] files, String requestPath) {

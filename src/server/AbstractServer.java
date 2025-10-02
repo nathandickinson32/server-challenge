@@ -1,27 +1,31 @@
 package server;
 
 import java.io.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public abstract class AbstractServer {
-
     private final int port;
-    private ServerSocket serverSocket;
+    private final int maxThreads;
 
-    protected AbstractServer(int port) {
+    protected AbstractServer(int port, int maxThreads) {
         this.port = port;
+        this.maxThreads = maxThreads;
     }
 
     public void start() throws IOException {
-        serverSocket = new NetworkServerSocket(port);
+        ServerSocket serverSocket = new NetworkServerSocket(port);
+        ExecutorService threadPool = Executors.newFixedThreadPool(maxThreads);
+
         while (!serverSocket.isClosed()) {
             Socket client = serverSocket.accept();
-            new Thread(() -> {
+            threadPool.submit(() -> {
                 try {
                     handleClient(client);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-            }).start();
+            });
         }
     }
 

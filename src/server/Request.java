@@ -1,6 +1,7 @@
 package server;
 
 import java.io.*;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,10 +18,11 @@ public class Request {
     public static Request requestParser(InputStream inputStream) throws IOException {
         Request request = new Request();
         BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.ISO_8859_1));
+
         String requestLine = in.readLine();
         request.parseRequestLine(requestLine);
         request.parseHeaders(in);
-        request.getQueryParams();
+        request.parseKeyValueStringFromUrl(request.getQueryString());
 
         String strContentLength = request.headers.get("Content-Length");
         if (strContentLength != null) {
@@ -28,20 +30,23 @@ public class Request {
             char[] content = new char[contentLength];
             int bodyCharsRead = in.read(content, 0, contentLength);
             if (bodyCharsRead > 0) {
-                request.rawBody = new String(content, 0, bodyCharsRead).getBytes(StandardCharsets.ISO_8859_1);
+                String bodyString = new String(content, 0, bodyCharsRead);
+                request.rawBody = bodyString.getBytes(StandardCharsets.ISO_8859_1);
+                String contentType = request.headers.getOrDefault("Content-Type", "");
+                if (contentType.startsWith("application/x-www-form-urlencoded")) {
+                    request.parseKeyValueStringFromUrl(bodyString);
+                }
             }
         }
+
         return request;
     }
 
     private void parseRequestLine(String line) {
-        if (line == null)
-            throw new IllegalArgumentException("Empty request line");
+        if (line == null) throw new IllegalArgumentException("Empty request line");
 
         String[] parts = line.split(" ");
-        if (parts.length < 3) {
-            throw new IllegalArgumentException("Invalid request line");
-        }
+        if (parts.length < 3) throw new IllegalArgumentException("Invalid request line");
 
         this.method = parts[0];
         this.path = parts[1];
@@ -58,21 +63,21 @@ public class Request {
         }
     }
 
-    public void getQueryParams() {
+    private String getQueryString() {
         if (path != null && path.contains("?")) {
-            String[] parts = path.split("\\?", 2);
-            String query = parts[1];
-            for (String pair : query.split("&")) {
-                String[] queryPairs = pair.split("=", 2);
-                String key = queryPairs[0];
-                String value;
-                if (queryPairs.length > 1) {
-                    value = queryPairs[1];
-                } else {
-                    value = "";
-                }
-                params.put(key, value);
-            }
+            return path.split("\\?", 2)[1];
+        }
+        return "";
+    }
+
+    private void parseKeyValueStringFromUrl(String input) {
+        if (input == null || input.isEmpty()) return;
+
+        for (String pair : input.split("&")) {
+            String[] keyValue = pair.split("=", 2);
+            String key = URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8);
+            String value = keyValue.length > 1 ? URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8) : "";
+            params.put(key, value);
         }
     }
 

@@ -12,8 +12,8 @@ public class HttpServer extends AbstractServer {
     private final Map<RoutePair, RequestHandler> handlers = new HashMap<>();
     private final RequestHandler fallbackHandler;
 
-    public HttpServer(int port, RequestHandler fallbackHandler) {
-        super(port);
+    public HttpServer(int port, int maxThreads, RequestHandler fallbackHandler) {
+        super(port, maxThreads);
         this.fallbackHandler = fallbackHandler;
     }
 

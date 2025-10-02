@@ -6,6 +6,7 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
+        final int MAX_THREADS = 10;
         ArgumentHandler.parseArguments(args);
         if (ArgumentHandler.shouldExit()) {
             return;
@@ -14,7 +15,7 @@ public class Main {
         int port = ArgumentHandler.getPort();
         String rootDir = ArgumentHandler.getRootDir();
 
-        HttpServer server = new HttpServer(port, new DirectoryHandler(rootDir));
+        HttpServer server = new HttpServer(port, MAX_THREADS, new DirectoryHandler(rootDir));
         addHandlers(server, rootDir);
         server.start();
     }

@@ -4,6 +4,7 @@ import handlers.*;
 import org.junit.Test;
 import server.FakeSocket;
 import server.HttpServer;
+import server.Request;
 
 import java.io.IOException;
 
@@ -11,11 +12,11 @@ import static org.junit.Assert.assertTrue;
 
 public class GuessHandlerTest {
 
-    private static final String TEST_ROOT = "testroot";
+    private GuessHandler guessHandler;
 
-    public static HttpServer createTestServer() {
-        HttpServer server = new HttpServer(0, new DirectoryHandler(TEST_ROOT));
-        var guessHandler = new GuessHandler();
+    public HttpServer createTestServer() {
+        HttpServer server = new HttpServer(0, 10, new DirectoryHandler("testroot"));
+        guessHandler = new GuessHandler();
         server.addHandler("GET", "/guess", guessHandler);
         server.addHandler("POST", "/guess", guessHandler);
         return server;
@@ -40,7 +41,7 @@ public class GuessHandlerTest {
     public void testPostGuessTooLow() throws IOException {
         HttpServer server = createTestServer();
         String sessionCookie = "sessionId=test1";
-        GuessHandler.setTestGame("test1", 50, 7);
+        guessHandler.setTestGame("test1", 50, 7);
 
         String postData = "guess=10";
         FakeSocket fakeSocket = new FakeSocket(
@@ -51,6 +52,12 @@ public class GuessHandlerTest {
                         postData
         );
         server.handleClient(fakeSocket);
+
+//        var request = new Request()
+//                .setMethod("POST")
+//                .setCookies(new HashMap<String, String>().put("sessionId", sessionCookie))
+//                .setParams(new HashMap<String, String>().put("guess", "10"));
+//        guessHandler.handle(request);
 
         FakeSocket getSocket = new FakeSocket("GET /guess HTTP/1.1\r\nCookie: " + sessionCookie + "\r\n\r\n");
         server.handleClient(getSocket);
@@ -63,7 +70,7 @@ public class GuessHandlerTest {
     public void testPostGuessTooHigh() throws IOException {
         HttpServer server = createTestServer();
         String sessionCookie = "sessionId=test2";
-        GuessHandler.setTestGame("test2", 50, 7);
+        guessHandler.setTestGame("test2", 50, 7);
 
         String postData = "guess=90";
         FakeSocket socket = new FakeSocket(
@@ -86,7 +93,7 @@ public class GuessHandlerTest {
     public void testPostCorrectGuess() throws IOException {
         HttpServer server = createTestServer();
         String sessionCookie = "sessionId=test3";
-        GuessHandler.setTestGame("test3", 50, 7);
+        guessHandler.setTestGame("test3", 50, 7);
 
         String postData = "guess=50";
         FakeSocket socket = new FakeSocket(
@@ -110,7 +117,7 @@ public class GuessHandlerTest {
     public void testPostOutOfAttempts() throws IOException {
         HttpServer server = createTestServer();
         String sessionCookie = "sessionId=test4";
-        GuessHandler.setTestGame("test4", 50, 1);
+        guessHandler.setTestGame("test4", 50, 1);
 
         String postData = "guess=10";
         FakeSocket socket = new FakeSocket(

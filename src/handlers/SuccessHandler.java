@@ -12,8 +12,7 @@ public class SuccessHandler {
         response.setStatusMessage("OK");
         response.setBody(message);
         response.addHeader("Content-Type", "text/html");
-        response.addHeader("Content-Length",
-                String.valueOf(response.getBody().getBytes(StandardCharsets.ISO_8859_1).length));
+        response.addHeader("Content-Length", response.getBody().getBytes(StandardCharsets.ISO_8859_1).length);
 
         return response;
     }

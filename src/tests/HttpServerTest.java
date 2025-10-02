@@ -2,12 +2,16 @@ package tests;
 
 import handlers.*;
 import org.junit.Test;
+import server.AbstractServer;
 import server.FakeSocket;
 import server.HttpServer;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.concurrent.*;
 
 import static org.junit.Assert.*;
 import static handlers.PingHandler.FORMATTER;
@@ -17,7 +21,7 @@ public class HttpServerTest {
     private static final String TEST_ROOT = "testroot";
 
     public static HttpServer createTestServer() {
-        HttpServer server = new HttpServer(0, new DirectoryHandler(TEST_ROOT));
+        HttpServer server = new HttpServer(0, 10, new DirectoryHandler(TEST_ROOT));
 
         server.addHandler("GET", "/index", new FileHandler(TEST_ROOT, "index.html"));
         server.addHandler("GET", "/hello", new HelloHandler(TEST_ROOT, "hello.html"));
@@ -40,7 +44,7 @@ public class HttpServerTest {
 
     @Test
     public void testRespondsToInvalidPath() throws IOException {
-        HttpServer server = new HttpServer(0, new DirectoryHandler("."));
+        HttpServer server = new HttpServer(0, 10, new DirectoryHandler("."));
         FakeSocket socket = new FakeSocket("GET /blah HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
@@ -128,7 +132,7 @@ public class HttpServerTest {
 
     @Test
     public void testRequestForPdf() throws IOException {
-        HttpServer server = new HttpServer(0, new DirectoryHandler(TEST_ROOT));
+        HttpServer server = new HttpServer(0, 10, new DirectoryHandler(TEST_ROOT));
         FakeSocket socket = new FakeSocket("GET /hello.pdf HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
@@ -141,7 +145,7 @@ public class HttpServerTest {
 
     @Test
     public void testRequestForPng() throws IOException {
-        HttpServer server = new HttpServer(0, new DirectoryHandler(TEST_ROOT));
+        HttpServer server = new HttpServer(0, 10, new DirectoryHandler(TEST_ROOT));
         FakeSocket socket = new FakeSocket("GET /img/decepticon.png HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
@@ -154,7 +158,7 @@ public class HttpServerTest {
 
     @Test
     public void testRequestForJpg() throws IOException {
-        HttpServer server = new HttpServer(0, new DirectoryHandler(TEST_ROOT));
+        HttpServer server = new HttpServer(0, 10, new DirectoryHandler(TEST_ROOT));
         FakeSocket socket = new FakeSocket("GET /img/decepticon.jpg HTTP/1.1");
         server.handleClient(socket);
         String response = socket.getResponse();
@@ -248,5 +252,53 @@ public class HttpServerTest {
         LocalDateTime endTime = LocalDateTime.parse(endTimeStr, FORMATTER);
         long secondsPassed = java.time.Duration.between(startTime, endTime).getSeconds();
         assertTrue(secondsPassed >= 2);
+    }
+
+    @Test
+    public void testThreadLimitProperly() throws InterruptedException {
+        int maxThreads = 2;
+        int totalClients = 3;
+        final int[] activeThreads = {0};
+        final int[] peakThreads = {0};
+        Object lock = new Object();
+        CountDownLatch latch = new CountDownLatch(totalClients);
+
+        AbstractServer server = new AbstractServer(0, maxThreads) {
+            @Override
+            protected void handleSocket(InputStream in, OutputStream out) throws IOException {
+                synchronized (lock) {
+                    activeThreads[0]++;
+                    if (activeThreads[0] > peakThreads[0]) {
+                        peakThreads[0] = activeThreads[0];
+                    }
+                }
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    synchronized (lock) {
+                        activeThreads[0]--;
+                    }
+                }
+            }
+        };
+
+        ExecutorService clientThreads = Executors.newFixedThreadPool(totalClients);
+        for (int i = 0; i < totalClients; i++) {
+            clientThreads.submit(() -> {
+                try {
+                    server.handleClient(new FakeSocket("GET / HTTP/1.1"));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+        clientThreads.shutdown();
+        assertFalse("Thread limit exceeded!", peakThreads[0] <= maxThreads);
     }
 }

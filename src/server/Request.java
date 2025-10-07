@@ -128,4 +128,8 @@ public class Request {
     public void setParams(Map<String, String> params) {
         this.params = params;
     }
+
+    public void addHeader(String key, String value) {
+        headers.put(key, value);
+    }
 }

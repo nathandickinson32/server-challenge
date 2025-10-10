@@ -11,9 +11,11 @@ public class Request {
     private String method;
     private String path;
     private String protocol;
+    private String sessionId;
     private byte[] rawBody = new byte[0];
     private Map<String, String> params = new HashMap<>();
     public Map<String, String> headers = new HashMap<>();
+    public Map<String, String> cookies = new HashMap<>();
 
     public Request(String method, String path, String protocol) {
         this.method = method;
@@ -81,6 +83,19 @@ public class Request {
                 headers.put(headerParts[0], headerParts[1]);
             }
         }
+        parseCookies();
+    }
+
+    private void parseCookies() {
+        String cookieHeader = headers.get("Cookie");
+        if (cookieHeader == null) return;
+
+        for (String cookie : cookieHeader.split(";")) {
+            String[] kv = cookie.trim().split("=", 2);
+            if (kv.length == 2 && kv[0].equals("sessionId")) {
+                sessionId = kv[1];
+            }
+        }
     }
 
     private String getQueryString() {
@@ -99,6 +114,14 @@ public class Request {
             String value = keyValue.length > 1 ? URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8) : "";
             params.put(key, value);
         }
+    }
+
+    public String getOrCreateSessionId(Response response) {
+        if (sessionId == null || sessionId.isEmpty()) {
+            sessionId = java.util.UUID.randomUUID().toString();
+            response.addHeader("Set-Cookie", "sessionId=" + sessionId);
+        }
+        return sessionId;
     }
 
     public String getPath() {
@@ -131,5 +154,25 @@ public class Request {
 
     public void addHeader(String key, String value) {
         headers.put(key, value);
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public Map<String, String> getCookies() {
+        return cookies;
+    }
+
+    public void setCookies(Map<String, String> cookies) {
+        this.cookies = cookies;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 }

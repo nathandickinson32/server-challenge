@@ -19,11 +19,10 @@ public class GuessHandler implements RequestHandler {
     @Override
     public Response handle(Request request) {
         Response response = new Response();
-        String sessionId = handleSession(request, response);
+        String sessionId = request.getOrCreateSessionId(response);
 
-        GameState game = gameSessions.get(sessionId);
-        game = maybeNewGame(game, sessionId);
-        maybeResumeGame(sessionId, game);
+        GameState game = gameSessions.computeIfAbsent(sessionId, id -> new GameState());
+        lastMessages.putIfAbsent(sessionId, getStartingMessage(game));
 
         if ("POST".equals(request.getMethod())) {
             handlePostRequest(request, sessionId, game, response);
@@ -32,30 +31,6 @@ public class GuessHandler implements RequestHandler {
         }
 
         return response;
-    }
-
-    private String handleSession(Request request, Response response) {
-        String sessionId = getSessionId(request);
-
-        if (sessionId == null || sessionId.isEmpty()) {
-            sessionId = UUID.randomUUID().toString();
-            response.addHeader("Set-Cookie", "sessionId=" + sessionId);
-        }
-
-        return sessionId;
-    }
-
-    private static String getSessionId(Request request) {
-        String cookieHeader = request.getHeader("Cookie");
-        if (cookieHeader == null) return null;
-
-        for (String cookie : cookieHeader.split(";")) {
-            String[] kv = cookie.trim().split("=", 2);
-            if (kv.length == 2 && kv[0].equals("sessionId")) {
-                return kv[1];
-            }
-        }
-        return null;
     }
 
     private void handlePostRequest(Request request, String sessionId, GameState game, Response response) {
@@ -86,31 +61,23 @@ public class GuessHandler implements RequestHandler {
         game.decrementAttempts();
 
         if (guess == game.getTarget()) {
-            int answer = game.getTarget();
-            gameSessions.put(sessionId, new GameState());
-            return "Correct! The number was " + answer + ". Starting a new game...";
+            return resetGame(sessionId, "Correct! The number was %d. Starting a new game...", game.getTarget());
         } else if (game.getAttemptsLeft() <= 0) {
-            int answer = game.getTarget();
-            gameSessions.put(sessionId, new GameState());
-            return "Out of tries! The number was " + answer + ". Starting a new game...";
-        } else if (guess < game.getTarget()) {
-            return "Too low! Attempts left: " + game.getAttemptsLeft();
+            return resetGame(sessionId, "Out of tries! The number was %d. Starting a new game...", game.getTarget());
         } else {
-            return "Too high! Attempts left: " + game.getAttemptsLeft();
+            if (guess < game.getTarget()) {
+                return "Too low! Attempts left: " + game.getAttemptsLeft();
+            } else {
+                return "Too high! Attempts left: " + game.getAttemptsLeft();
+            }
         }
     }
 
-    private void maybeResumeGame(String sessionId, GameState game) {
-        lastMessages.putIfAbsent(sessionId, getStartingMessage(game));
+    private String resetGame(String sessionId, String message, int target) {
+        gameSessions.put(sessionId, new GameState());
+        return String.format(message, target);
     }
 
-    private GameState maybeNewGame(GameState game, String sessionId) {
-        if (game == null) {
-            game = new GameState();
-            gameSessions.put(sessionId, game);
-        }
-        return game;
-    }
 
     private String getStartingMessage(GameState game) {
         return "I'm thinking of a number between 1 and 100. You have " + game.getAttemptsLeft() + " tries!";

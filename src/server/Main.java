@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        final int MAX_THREADS = 10;
+        final int MAX_THREADS = 1;
         ArgumentHandler.parseArguments(args);
         if (ArgumentHandler.shouldExit()) {
             return;

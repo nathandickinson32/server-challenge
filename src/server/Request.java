@@ -32,7 +32,6 @@ public class Request {
         this.rawBody = body != null ? body : new byte[0];
     }
 
-
     public Request() {
 
     }
@@ -92,11 +91,17 @@ public class Request {
 
         for (String cookie : cookieHeader.split(";")) {
             String[] kv = cookie.trim().split("=", 2);
-            if (kv.length == 2 && kv[0].equals("sessionId")) {
-                sessionId = kv[1];
+            if (kv.length == 2) {
+                String key = kv[0];
+                String value = kv[1];
+                cookies.put(key, value);
+                if (key.equals("sessionId")) {
+                    sessionId = value;
+                }
             }
         }
     }
+
 
     private String getQueryString() {
         if (path != null && path.contains("?")) {

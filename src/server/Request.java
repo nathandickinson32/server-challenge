@@ -180,4 +180,12 @@ public class Request {
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
+
+    public void setRawBody(byte[] rawBody) {
+        this.rawBody = rawBody;
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
+    }
 }
